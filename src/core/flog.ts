@@ -1,5 +1,6 @@
 import { LogLevel, LogOptions } from './interfaces';
 import { ColorUtils } from '../utils/colors';
+import { LoggerConfigManager } from './config';
 
 export class Flog {
   private className: string;
@@ -12,11 +13,12 @@ export class Flog {
 
   private formatMessage(level: LogLevel, message: string, options?: LogOptions): string {
     const context = this.buildContext();
-    const timestamp = options?.timestamp ? this.formatTimestamp() : '';
+    const config = LoggerConfigManager.getInstance().getConfig();
+    const timestamp = (options?.timestamp || config.timestamp) ? this.formatTimestamp() : '';
     
-    const levelStr = ColorUtils.colorizeLevel(level);
-    const contextStr = ColorUtils.colorizeContext(context);
-    const messageStr = ColorUtils.colorizeMessage(level, message);
+    const levelStr = config.colors ? ColorUtils.colorizeLevel(level) : level;
+    const contextStr = config.colors ? ColorUtils.colorizeContext(context) : context;
+    const messageStr = config.colors ? ColorUtils.colorizeMessage(level, message) : message;
     
     return `${timestamp}[${levelStr}] [${contextStr}] ${messageStr}`;
   }
@@ -32,8 +34,18 @@ export class Flog {
   }
 
   private log(level: LogLevel, message: string, options?: LogOptions): void {
+    const configManager = LoggerConfigManager.getInstance();
+    
+    if (!configManager.shouldLog(level)) {
+      return;
+    }
+    
     const formattedMessage = this.formatMessage(level, message, options);
-    console.log(formattedMessage);
+    const config = configManager.getConfig();
+    
+    config.transports.forEach(transport => {
+      transport.write(level, formattedMessage, options?.metadata);
+    });
   }
 
   error(message: string, options?: LogOptions): void {
