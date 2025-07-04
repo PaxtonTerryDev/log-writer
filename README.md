@@ -141,4 +141,143 @@ log.info('This is a timed log entry.', { timestamp: true });
 
 ```
 2025-07-02T12:00:00.000Z [INFO] [MyClass] This is a timed log entry.
-```  
+```
+
+## Configuration and Transports
+
+`flog` supports multiple output targets through its transport system. You can configure where your logs are written and how they're formatted.
+
+### Default Configuration
+
+By default, `flog` uses console output with colored messages. You can access the global configuration through the `LoggerConfigManager`.
+
+```typescript
+import { LoggerConfigManager, LogLevel } from 'flog';
+
+const configManager = LoggerConfigManager.getInstance();
+
+// Set minimum log level
+configManager.setLevel(LogLevel.INFO);
+
+// Enable/disable timestamps globally
+configManager.setTimestamp(true);
+
+// Enable/disable colors
+configManager.setColors(false);
+```
+
+### Available Transports
+
+`flog` includes three built-in transport types:
+
+#### Console Transport
+Outputs logs to the console with optional color coding.
+
+```typescript
+import { ConsoleTransport } from 'flog';
+
+const consoleTransport = new ConsoleTransport();
+```
+
+#### File Transport
+Writes logs to a file with timestamps.
+
+```typescript
+import { FileTransport } from 'flog';
+
+const fileTransport = new FileTransport('./logs/app.log');
+```
+
+#### JSON Transport
+Writes structured JSON logs to a file, perfect for log analysis tools.
+
+```typescript
+import { JSONTransport } from 'flog';
+
+const jsonTransport = new JSONTransport('./logs/app.json');
+```
+
+### Configuring Multiple Transports
+
+You can configure multiple transports to write logs to different destinations simultaneously.
+
+```typescript
+import { LoggerConfigManager, ConsoleTransport, FileTransport, JSONTransport } from 'flog';
+
+const configManager = LoggerConfigManager.getInstance();
+
+// Configure multiple transports
+configManager.setTransports([
+  new ConsoleTransport(),
+  new FileTransport('./logs/app.log'),
+  new JSONTransport('./logs/app.json')
+]);
+```
+
+### Advanced Configuration Example
+
+```typescript
+import { Flog, LoggerConfigManager, LogLevel, ConsoleTransport, FileTransport, JSONTransport } from 'flog';
+
+// Configure the logger globally
+const configManager = LoggerConfigManager.getInstance();
+configManager.setLevel(LogLevel.DEBUG);
+configManager.setTimestamp(true);
+configManager.setTransports([
+  new ConsoleTransport(),
+  new FileTransport('./logs/application.log'),
+  new JSONTransport('./logs/structured.json')
+]);
+
+// Use in your classes
+class ApiService {
+  private log = new Flog('ApiService');
+
+  async fetchData(endpoint: string) {
+    this.log.info(`Fetching data from ${endpoint}`);
+    
+    try {
+      // Simulate API call
+      this.log.debug('Making HTTP request');
+      const data = await fetch(endpoint);
+      this.log.info('Data fetched successfully', { 
+        metadata: { endpoint, status: data.status }
+      });
+    } catch (error) {
+      this.log.error(`Failed to fetch data: ${error.message}`);
+    }
+  }
+}
+```
+
+### Log Output Examples
+
+With the above configuration, a single log call will produce:
+
+**Console Output:**
+```
+2025-07-02T12:00:00.000Z [INFO] [ApiService] Fetching data from /api/users
+```
+
+**File Output (application.log):**
+```
+2025-07-02T12:00:00.000Z [INFO] [ApiService] Fetching data from /api/users
+2025-07-02T12:00:00.123Z [DEBUG] [ApiService] Making HTTP request
+2025-07-02T12:00:00.456Z [INFO] [ApiService] Data fetched successfully
+```
+
+**JSON Output (structured.json):**
+```json
+{"timestamp":"2025-07-02T12:00:00.000Z","level":"INFO","message":"[INFO] [ApiService] Fetching data from /api/users"}
+{"timestamp":"2025-07-02T12:00:00.123Z","level":"DEBUG","message":"[DEBUG] [ApiService] Making HTTP request"}
+{"timestamp":"2025-07-02T12:00:00.456Z","level":"INFO","message":"[INFO] [ApiService] Data fetched successfully","metadata":{"endpoint":"/api/users","status":200}}
+```
+
+### Transport Error Handling
+
+All transports include built-in error handling with console fallback. If a file transport fails to write (e.g., due to permissions), it will automatically fall back to console output.
+
+```typescript
+// This will fallback to console if the file path is invalid
+const fileTransport = new FileTransport('/invalid/path/app.log');
+```
