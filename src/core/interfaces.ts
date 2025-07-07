@@ -61,7 +61,3 @@ export interface LevelFilter {
   exclude?: LogLevel[];
 }
 
-// Forward declaration for Loggable interface
-export interface Loggable {
-  log: any; // Will be Flog type when imported
-}

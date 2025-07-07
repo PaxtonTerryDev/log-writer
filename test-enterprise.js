@@ -1,11 +1,11 @@
 // Quick test of enterprise features
-const { Flog, LogLevel } = require('./dist/index.js');
+const { LogWriter, LogLevel } = require('./dist/index.js');
 
 console.log('🚀 Testing Enterprise Logging Features\n');
 
 // Test 1: Simple out-of-box usage (should work with defaults)
 console.log('Test 1: Default configuration');
-const simpleLog = new Flog("TestService");
+const simpleLog = new LogWriter("TestService");
 simpleLog.info("This uses built-in defaults");
 simpleLog.error("Error with built-in defaults");
 

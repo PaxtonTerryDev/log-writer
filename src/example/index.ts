@@ -1,5 +1,5 @@
-import { Flog } from '@/core/flog';
+import { LogWriter } from '@/core/logwriter';
 
-const log = new Flog("TestClass");
+const log = new LogWriter("TestClass");
 
 log.info("Hello World");

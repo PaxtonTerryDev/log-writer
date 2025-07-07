@@ -1,5 +1,5 @@
-export { Flog } from './core/flog';
-export { LogLevel, LogOptions, Loggable, Transport, LoggerConfig, FileConfig, TransportConfig, ColorConfig, LevelFilter } from './core/interfaces';
+export { LogWriter } from './core/logwriter';
+export { LogLevel, LogOptions, Transport, LoggerConfig, FileConfig, TransportConfig, ColorConfig, LevelFilter } from './core/interfaces';
 export { ColorUtils } from './utils/colors';
 export { ConfigLoader } from './core/config-loader';
 export { ConsoleTransport } from './transports/console';
