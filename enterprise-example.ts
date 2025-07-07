@@ -7,12 +7,12 @@
  * including named transports, level filtering, and separation of concerns.
  */
 
-import { Flog, LogLevel, ConsoleTransport } from './src/index';
+import { LogWriter, LogLevel, ConsoleTransport } from './src/index';
 
 // Example: Government Security System
 class SecurityService {
   // Uses default transports from config (console + audit + general)
-  private log = new Flog('SecurityService');
+  private log = new LogWriter('SecurityService');
 
   authenticateUser(userId: string) {
     this.log.info(`User ${userId} authentication attempt`);
@@ -35,7 +35,7 @@ class SecurityService {
 // Example: Payment Processing (High-Security)
 class PaymentProcessor {
   // Override defaults to use only secure transports
-  private log = new Flog('PaymentProcessor', undefined, undefined, ['audit', 'errors']);
+  private log = new LogWriter('PaymentProcessor', undefined, undefined, ['audit', 'errors']);
 
   processPayment(amount: number, userId: string) {
     this.log.info(`Processing payment of $${amount} for user ${userId}`);
@@ -62,7 +62,7 @@ class PaymentProcessor {
 // Example: Debug Service (Development)
 class DebugService {
   // Debug-focused logging
-  private log = new Flog('DebugService', undefined, undefined, ['debug', 'console']);
+  private log = new LogWriter('DebugService', undefined, undefined, ['debug', 'console']);
 
   analyzePerformance() {
     this.log.debug('Starting performance analysis');
@@ -74,7 +74,7 @@ class DebugService {
 
 // Example: API Gateway (Mixed Outputs)
 class ApiGateway {
-  private log = new Flog('ApiGateway');
+  private log = new LogWriter('ApiGateway');
 
   handleRequest(endpoint: string, method: string) {
     // Normal request logging (uses defaults)

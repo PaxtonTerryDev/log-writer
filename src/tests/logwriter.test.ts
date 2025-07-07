@@ -1,4 +1,4 @@
-import { Flog } from '@/core/flog';
+import { LogWriter } from '@/core/logwriter';
 import { LogLevel } from '@/core/interfaces';
 import stripAnsi from 'strip-ansi';
 import { resolve } from 'path';
@@ -23,29 +23,29 @@ afterAll(() => {
   console.log = originalConsoleLog;
 });
 
-describe('Flog Class', () => {
+describe('LogWriter Class', () => {
   describe('Constructor', () => {
     it('should create instance with className only', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
-      expect(logger).toBeInstanceOf(Flog);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
+      expect(logger).toBeInstanceOf(LogWriter);
     });
 
     it('should create instance with className and instanceId', () => {
-      const logger = new Flog('TestClass', 'instance-1', TEST_CONFIG_PATH);
-      expect(logger).toBeInstanceOf(Flog);
+      const logger = new LogWriter('TestClass', 'instance-1', TEST_CONFIG_PATH);
+      expect(logger).toBeInstanceOf(LogWriter);
     });
 
     it('should handle empty className', () => {
-      const logger = new Flog('', undefined, TEST_CONFIG_PATH);
-      expect(logger).toBeInstanceOf(Flog);
+      const logger = new LogWriter('', undefined, TEST_CONFIG_PATH);
+      expect(logger).toBeInstanceOf(LogWriter);
     });
   });
 
   describe('Log Level Methods', () => {
-    let logger: Flog;
+    let logger: LogWriter;
 
     beforeEach(() => {
-      logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
     });
 
     it('should have error method', () => {
@@ -96,7 +96,7 @@ describe('Flog Class', () => {
 
   describe('Message Formatting', () => {
     it('should format message with className only', () => {
-      const logger = new Flog('UserService', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('UserService', undefined, TEST_CONFIG_PATH);
       logger.info('Processing user data');
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -105,7 +105,7 @@ describe('Flog Class', () => {
     });
 
     it('should format message with className and instanceId', () => {
-      const logger = new Flog('Worker', 'thread-1', TEST_CONFIG_PATH);
+      const logger = new LogWriter('Worker', 'thread-1', TEST_CONFIG_PATH);
       logger.info('Starting work');
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -114,7 +114,7 @@ describe('Flog Class', () => {
     });
 
     it('should handle timestamp option', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.info('Test message', { timestamp: true });
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -123,7 +123,7 @@ describe('Flog Class', () => {
     });
 
     it('should handle metadata option', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       const metadata = { userId: '123', action: 'login' };
       logger.info('User action', { metadata });
       
@@ -135,7 +135,7 @@ describe('Flog Class', () => {
 
   describe('Configuration Options', () => {
     it('should override colors per call', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.info('Test message', { colors: false });
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -146,7 +146,7 @@ describe('Flog Class', () => {
     });
 
     it('should override timestamp per call', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.info('Without timestamp');
       logger.info('With timestamp', { timestamp: true });
       
@@ -159,7 +159,7 @@ describe('Flog Class', () => {
     });
 
     it('should handle custom format', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.info('Test message', { format: '{level}: {message} from {context}' });
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -170,7 +170,7 @@ describe('Flog Class', () => {
 
   describe('Edge Cases and Error Handling', () => {
     it('should handle empty messages', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.info('');
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -179,7 +179,7 @@ describe('Flog Class', () => {
     });
 
     it('should handle very long messages', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       const longMessage = 'A'.repeat(10000);
       
       expect(() => logger.info(longMessage)).not.toThrow();
@@ -188,7 +188,7 @@ describe('Flog Class', () => {
     });
 
     it('should handle special Unicode characters', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       const unicodeMessage = '🚀 Hello 世界 émojis! 🌍';
       
       logger.info(unicodeMessage);
@@ -197,7 +197,7 @@ describe('Flog Class', () => {
     });
 
     it('should handle newlines in messages', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       const multilineMessage = 'Line 1\nLine 2\nLine 3';
       
       logger.info(multilineMessage);
@@ -207,7 +207,7 @@ describe('Flog Class', () => {
 
     it('should handle very long class names', () => {
       const longClassName = 'VeryLongClassNameThatExceedsNormalLengthLimits'.repeat(10);
-      const logger = new Flog(longClassName, undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter(longClassName, undefined, TEST_CONFIG_PATH);
       
       expect(() => logger.info('Test message')).not.toThrow();
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -215,7 +215,7 @@ describe('Flog Class', () => {
     });
 
     it('should handle special characters in class names', () => {
-      const logger = new Flog('Class-Name_123@Service', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('Class-Name_123@Service', undefined, TEST_CONFIG_PATH);
       logger.info('Test message');
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -224,7 +224,7 @@ describe('Flog Class', () => {
     });
 
     it('should handle multiple rapid log calls', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       
       for (let i = 0; i < 100; i++) {
         logger.info(`Message ${i}`);
@@ -236,7 +236,7 @@ describe('Flog Class', () => {
 
   describe('includeName Configuration', () => {
     it('should include name by default', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.info('Test message');
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -245,7 +245,7 @@ describe('Flog Class', () => {
     });
 
     it('should exclude name when includeName is false', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.setConfig({ includeName: false });
       logger.info('Test message');
       
@@ -255,7 +255,7 @@ describe('Flog Class', () => {
     });
 
     it('should work with all log levels when includeName is false', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.setConfig({ includeName: false });
       
       logger.error('Error message');
@@ -273,7 +273,7 @@ describe('Flog Class', () => {
     });
 
     it('should work with timestamps when includeName is false', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.setConfig({ includeName: false });
       logger.info('Test message', { timestamp: true });
       
@@ -283,7 +283,7 @@ describe('Flog Class', () => {
     });
 
     it('should work with both includeLevel and includeName disabled', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.setConfig({ includeLevel: false, includeName: false });
       logger.info('Test message');
       
@@ -293,7 +293,7 @@ describe('Flog Class', () => {
     });
 
     it('should work with timestamps when both includeLevel and includeName disabled', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.setConfig({ includeLevel: false, includeName: false });
       logger.info('Test message', { timestamp: true });
       
@@ -305,7 +305,7 @@ describe('Flog Class', () => {
 
   describe('includeLevel Configuration', () => {
     it('should include level by default', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.info('Test message');
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -314,7 +314,7 @@ describe('Flog Class', () => {
     });
 
     it('should exclude level when includeLevel is false', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.setConfig({ includeLevel: false });
       logger.info('Test message');
       
@@ -324,7 +324,7 @@ describe('Flog Class', () => {
     });
 
     it('should work with all log levels when includeLevel is false', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.setConfig({ includeLevel: false });
       
       logger.error('Error message');
@@ -342,7 +342,7 @@ describe('Flog Class', () => {
     });
 
     it('should work with instanceId when includeLevel is false', () => {
-      const logger = new Flog('Worker', 'thread-1', TEST_CONFIG_PATH);
+      const logger = new LogWriter('Worker', 'thread-1', TEST_CONFIG_PATH);
       logger.setConfig({ includeLevel: false });
       logger.info('Processing task');
       
@@ -352,7 +352,7 @@ describe('Flog Class', () => {
     });
 
     it('should work with timestamps when includeLevel is false', () => {
-      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('TestClass', undefined, TEST_CONFIG_PATH);
       logger.setConfig({ includeLevel: false });
       logger.info('Test message', { timestamp: true });
       
@@ -365,7 +365,7 @@ describe('Flog Class', () => {
   describe('Integration Tests', () => {
     it('should work with typical usage patterns', () => {
       class UserService {
-        private log = new Flog('UserService', undefined, TEST_CONFIG_PATH);
+        private log = new LogWriter('UserService', undefined, TEST_CONFIG_PATH);
         
         fetchUser(id: string) {
           this.log.info(`Fetching user ${id}`);
@@ -385,10 +385,10 @@ describe('Flog Class', () => {
 
     it('should work with worker pattern', () => {
       class Worker {
-        private log: Flog;
+        private log: LogWriter;
         
         constructor(private id: string) {
-          this.log = new Flog('Worker', this.id, TEST_CONFIG_PATH);
+          this.log = new LogWriter('Worker', this.id, TEST_CONFIG_PATH);
         }
         
         processTask(task: string) {
@@ -411,7 +411,7 @@ describe('Flog Class', () => {
     });
 
     it('should demonstrate configuration flexibility', () => {
-      const logger = new Flog('FlexibleLogger', undefined, TEST_CONFIG_PATH);
+      const logger = new LogWriter('FlexibleLogger', undefined, TEST_CONFIG_PATH);
       
       // Normal log
       logger.info('Normal message');

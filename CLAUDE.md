@@ -35,10 +35,6 @@ Create a TypeScript logging library optimized for object-oriented codebases that
 ### 1. Primary Logging Interface
 
 ```typescript
-interface Loggable {
-  log: Flog;
-}
-
 class Flog {
   constructor(className: string, instanceId?: string);
 
@@ -125,7 +121,7 @@ class JSONTransport implements Transport;
 **Basic Usage**
 
 ```typescript
-class UserService implements Loggable {
+class UserService {
   log = new Flog("UserService");
 
   getUser(id: string) {
@@ -138,7 +134,7 @@ class UserService implements Loggable {
 **With Instance IDs** (when multiple instances need distinction)
 
 ```typescript
-class Worker implements Loggable {
+class Worker {
   log = new Flog("Worker", `thread-${threadId}`);
 
   processTask() {

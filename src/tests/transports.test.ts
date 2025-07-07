@@ -2,7 +2,7 @@ import { ConsoleTransport } from "@/transports/console";
 import { FileTransport } from "@/transports/file";
 import { JSONTransport } from "@/transports/json";
 import { LogLevel } from "@/core/interfaces";
-import { Flog } from "@/core/flog";
+import { LogWriter } from "@/core/logwriter";
 import { readFileSync, existsSync, unlinkSync } from "fs";
 import { join } from "path";
 
@@ -319,12 +319,12 @@ describe("JSONTransport", () => {
   });
 });
 
-describe("Transport Integration with Flog", () => {
-  let logger: Flog;
+describe("Transport Integration with LogWriter", () => {
+  let logger: LogWriter;
   const TEST_CONFIG_PATH = join(__dirname, "test-config.json");
 
   beforeEach(() => {
-    logger = new Flog("TestClass", undefined, TEST_CONFIG_PATH);
+    logger = new LogWriter("TestClass", undefined, TEST_CONFIG_PATH);
   });
 
   it("should use configured transports", () => {

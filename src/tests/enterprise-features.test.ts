@@ -1,4 +1,4 @@
-import { Flog } from '@/core/flog';
+import { LogWriter } from '@/core/logwriter';
 import { ConfigLoader } from '@/core/config-loader';
 import { ConsoleTransport } from '@/transports/console';
 import { FileTransport } from '@/transports/file';
@@ -76,7 +76,7 @@ describe('Enterprise Logging Features', () => {
 
   describe('Named Transports Configuration', () => {
     const testConfigDir = join(__dirname, 'enterprise-config');
-    const testConfigPath = join(testConfigDir, 'flog.config.json');
+    const testConfigPath = join(testConfigDir, 'logwriter.config.json');
 
     beforeEach(() => {
       // Create test config directory if it doesn't exist
@@ -167,7 +167,7 @@ describe('Enterprise Logging Features', () => {
       
       // Console warning should have been called
       expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to load flog config'),
+        expect.stringContaining('Failed to load LogWriter config'),
         expect.any(Error)
       );
     });
@@ -189,9 +189,9 @@ describe('Enterprise Logging Features', () => {
     });
   });
 
-  describe('Named Transport Usage in Flog', () => {
+  describe('Named Transport Usage in LogWriter', () => {
     const testConfigDir = join(__dirname, 'enterprise-usage');
-    const testConfigPath = join(testConfigDir, 'flog.config.json');
+    const testConfigPath = join(testConfigDir, 'logwriter.config.json');
 
     beforeEach(() => {
       if (!existsSync(testConfigDir)) {
@@ -235,7 +235,7 @@ describe('Enterprise Logging Features', () => {
     });
 
     it('should use default transports from config', () => {
-      const logger = new Flog('TestService', undefined, testConfigPath);
+      const logger = new LogWriter('TestService', undefined, testConfigPath);
       
       logger.info('Test message');
       
@@ -252,7 +252,7 @@ describe('Enterprise Logging Features', () => {
     });
 
     it('should override transports with named transport strings', () => {
-      const logger = new Flog('TestService', undefined, testConfigPath);
+      const logger = new LogWriter('TestService', undefined, testConfigPath);
       
       logger.error('Critical error', { transports: ['errors', 'console'] });
       
@@ -276,7 +276,7 @@ describe('Enterprise Logging Features', () => {
     });
 
     it('should support constructor-level default transport override', () => {
-      const logger = new Flog('DebugService', undefined, testConfigPath, ['debug', 'console']);
+      const logger = new LogWriter('DebugService', undefined, testConfigPath, ['debug', 'console']);
       
       logger.info('Debug info message');
       
@@ -293,7 +293,7 @@ describe('Enterprise Logging Features', () => {
     });
 
     it('should respect transport-level filtering', () => {
-      const logger = new Flog('TestService', undefined, testConfigPath);
+      const logger = new LogWriter('TestService', undefined, testConfigPath);
       
       // Try to log DEBUG to errors transport (should be filtered out)
       logger.debug('Debug message', { transports: ['errors'] });
@@ -311,7 +311,7 @@ describe('Enterprise Logging Features', () => {
     });
 
     it('should provide utility methods for transport management', () => {
-      const logger = new Flog('TestService', undefined, testConfigPath);
+      const logger = new LogWriter('TestService', undefined, testConfigPath);
       
       expect(logger.getTransportNames()).toEqual(['console', 'errors', 'audit', 'debug']);
       
@@ -327,7 +327,7 @@ describe('Enterprise Logging Features', () => {
     });
 
     it('should handle mixed Transport instances and string names', () => {
-      const logger = new Flog('TestService', undefined, testConfigPath);
+      const logger = new LogWriter('TestService', undefined, testConfigPath);
       const customTransport = new ConsoleTransport('custom');
       
       // Mix of transport instance and transport name
@@ -374,15 +374,15 @@ describe('Enterprise Logging Features', () => {
       // This demonstrates how different log types would be routed:
       
       // Security incident - goes to security alerts only
-      const securityLogger = new Flog('SecurityModule');
+      const securityLogger = new LogWriter('SecurityModule');
       // securityLogger.error('Unauthorized access attempt', { transports: ['security_alerts', 'console'] });
       
       // Business logic - goes to default transports
-      const businessLogger = new Flog('BusinessLogic');
+      const businessLogger = new LogWriter('BusinessLogic');
       // businessLogger.info('Processing payment');
       
       // Debug info - goes to debug logs only  
-      const devLogger = new Flog('DevModule');
+      const devLogger = new LogWriter('DevModule');
       // devLogger.debug('Variable state', { transports: ['debug_logs'] });
       
       expect(governmentConfig.transports.security_alerts).toBeDefined();
