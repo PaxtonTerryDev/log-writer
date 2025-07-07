@@ -19,6 +19,8 @@ export class Flog {
     const context = this.buildContext();
     const useTimestamp = options?.timestamp ?? this.config.timestamp;
     const useColors = options?.colors ?? this.config.colors;
+    const includeLevel = this.config.includeLevel;
+    const includeName = this.config.includeName;
     const timestamp = useTimestamp ? this.formatTimestamp() : '';
     
     // Handle custom format override
@@ -30,7 +32,9 @@ export class Flog {
     const contextStr = useColors ? ColorUtils.colorizeContext(context) : context;
     const messageStr = useColors ? ColorUtils.colorizeMessage(level, message) : message;
     
-    return `${timestamp}[${levelStr}] [${contextStr}] ${messageStr}`;
+    const levelPart = includeLevel ? `[${levelStr}] ` : '';
+    const namePart = includeName ? `[${contextStr}] ` : '';
+    return `${timestamp}${levelPart}${namePart}${messageStr}`;
   }
 
   private buildContext(): string {

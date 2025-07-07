@@ -11,6 +11,8 @@ export class ConfigLoader {
     level: LogLevel.INFO,
     timestamp: false,
     colors: true,
+    includeLevel: true,
+    includeName: true,
     transports: {
       console: new ConsoleTransport('console')
     },
@@ -77,6 +79,8 @@ export class ConfigLoader {
       level: this.parseLogLevel(fileConfig.level) || this.DEFAULT_CONFIG.level,
       timestamp: fileConfig.timestamp ?? this.DEFAULT_CONFIG.timestamp,
       colors: fileConfig.colors ?? this.DEFAULT_CONFIG.colors,
+      includeLevel: fileConfig.includeLevel ?? this.DEFAULT_CONFIG.includeLevel,
+      includeName: fileConfig.includeName ?? this.DEFAULT_CONFIG.includeName,
       transports,
       defaultTransports
     };
@@ -196,6 +200,14 @@ export class ConfigLoader {
 
     if (typeof config.colors !== 'boolean' && typeof config.colors !== 'object') {
       throw new Error('colors must be a boolean or ColorConfig object');
+    }
+
+    if (typeof config.includeLevel !== 'boolean') {
+      throw new Error('includeLevel must be a boolean');
+    }
+
+    if (typeof config.includeName !== 'boolean') {
+      throw new Error('includeName must be a boolean');
     }
 
     if (typeof config.transports !== 'object' || Array.isArray(config.transports)) {

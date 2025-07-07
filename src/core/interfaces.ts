@@ -25,6 +25,8 @@ export interface LoggerConfig {
   level: LogLevel;
   timestamp: boolean;
   colors: boolean | ColorConfig;
+  includeLevel: boolean;                 // Whether to include [LEVEL] in output
+  includeName: boolean;                  // Whether to include [ClassName] in output
   transports: Record<string, Transport>; // Named transports
   defaultTransports: string[];           // Default transport names to use
 }
@@ -41,6 +43,8 @@ export interface FileConfig {
   level?: string;
   timestamp?: boolean;
   colors?: boolean | ColorConfig;
+  includeLevel?: boolean;                // Whether to include [LEVEL] in output
+  includeName?: boolean;                 // Whether to include [ClassName] in output
   transports?: Record<string, TransportConfig> | TransportConfig[]; // Named or array
   defaultTransports?: string[];
 }
