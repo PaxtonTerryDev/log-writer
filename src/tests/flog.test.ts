@@ -234,6 +234,134 @@ describe('Flog Class', () => {
     });
   });
 
+  describe('includeName Configuration', () => {
+    it('should include name by default', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.info('Test message');
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
+      const cleanOutput = getCleanLogOutput();
+      expect(cleanOutput).toContain('[INFO] [TestClass] Test message');
+    });
+
+    it('should exclude name when includeName is false', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.setConfig({ includeName: false });
+      logger.info('Test message');
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
+      const cleanOutput = getCleanLogOutput();
+      expect(cleanOutput).toBe('[INFO] Test message');
+    });
+
+    it('should work with all log levels when includeName is false', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.setConfig({ includeName: false });
+      
+      logger.error('Error message');
+      logger.warn('Warning message');
+      logger.info('Info message');
+      logger.debug('Debug message');
+      logger.trace('Trace message');
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(5);
+      expect(getCleanLogOutput(0)).toBe('[ERROR] Error message');
+      expect(getCleanLogOutput(1)).toBe('[WARN] Warning message');
+      expect(getCleanLogOutput(2)).toBe('[INFO] Info message');
+      expect(getCleanLogOutput(3)).toBe('[DEBUG] Debug message');
+      expect(getCleanLogOutput(4)).toBe('[TRACE] Trace message');
+    });
+
+    it('should work with timestamps when includeName is false', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.setConfig({ includeName: false });
+      logger.info('Test message', { timestamp: true });
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
+      const cleanOutput = getCleanLogOutput();
+      expect(cleanOutput).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z \[INFO\] Test message$/);
+    });
+
+    it('should work with both includeLevel and includeName disabled', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.setConfig({ includeLevel: false, includeName: false });
+      logger.info('Test message');
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
+      const cleanOutput = getCleanLogOutput();
+      expect(cleanOutput).toBe('Test message');
+    });
+
+    it('should work with timestamps when both includeLevel and includeName disabled', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.setConfig({ includeLevel: false, includeName: false });
+      logger.info('Test message', { timestamp: true });
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
+      const cleanOutput = getCleanLogOutput();
+      expect(cleanOutput).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z Test message$/);
+    });
+  });
+
+  describe('includeLevel Configuration', () => {
+    it('should include level by default', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.info('Test message');
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
+      const cleanOutput = getCleanLogOutput();
+      expect(cleanOutput).toContain('[INFO] [TestClass] Test message');
+    });
+
+    it('should exclude level when includeLevel is false', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.setConfig({ includeLevel: false });
+      logger.info('Test message');
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
+      const cleanOutput = getCleanLogOutput();
+      expect(cleanOutput).toBe('[TestClass] Test message');
+    });
+
+    it('should work with all log levels when includeLevel is false', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.setConfig({ includeLevel: false });
+      
+      logger.error('Error message');
+      logger.warn('Warning message');
+      logger.info('Info message');
+      logger.debug('Debug message');
+      logger.trace('Trace message');
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(5);
+      expect(getCleanLogOutput(0)).toBe('[TestClass] Error message');
+      expect(getCleanLogOutput(1)).toBe('[TestClass] Warning message');
+      expect(getCleanLogOutput(2)).toBe('[TestClass] Info message');
+      expect(getCleanLogOutput(3)).toBe('[TestClass] Debug message');
+      expect(getCleanLogOutput(4)).toBe('[TestClass] Trace message');
+    });
+
+    it('should work with instanceId when includeLevel is false', () => {
+      const logger = new Flog('Worker', 'thread-1', TEST_CONFIG_PATH);
+      logger.setConfig({ includeLevel: false });
+      logger.info('Processing task');
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
+      const cleanOutput = getCleanLogOutput();
+      expect(cleanOutput).toBe('[Worker:thread-1] Processing task');
+    });
+
+    it('should work with timestamps when includeLevel is false', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.setConfig({ includeLevel: false });
+      logger.info('Test message', { timestamp: true });
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
+      const cleanOutput = getCleanLogOutput();
+      expect(cleanOutput).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z \[TestClass\] Test message$/);
+    });
+  });
+
   describe('Integration Tests', () => {
     it('should work with typical usage patterns', () => {
       class UserService {
