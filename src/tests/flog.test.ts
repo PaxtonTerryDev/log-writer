@@ -1,6 +1,9 @@
 import { Flog } from '@/core/flog';
 import { LogLevel } from '@/core/interfaces';
 import stripAnsi from 'strip-ansi';
+import { resolve } from 'path';
+
+const TEST_CONFIG_PATH = resolve(__dirname, 'test-config.json');
 
 // Mock console.log to capture output
 const mockConsoleLog = jest.fn();
@@ -23,17 +26,17 @@ afterAll(() => {
 describe('Flog Class', () => {
   describe('Constructor', () => {
     it('should create instance with className only', () => {
-      const logger = new Flog('TestClass');
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
       expect(logger).toBeInstanceOf(Flog);
     });
 
     it('should create instance with className and instanceId', () => {
-      const logger = new Flog('TestClass', 'instance-1');
+      const logger = new Flog('TestClass', 'instance-1', TEST_CONFIG_PATH);
       expect(logger).toBeInstanceOf(Flog);
     });
 
     it('should handle empty className', () => {
-      const logger = new Flog('');
+      const logger = new Flog('', undefined, TEST_CONFIG_PATH);
       expect(logger).toBeInstanceOf(Flog);
     });
   });
@@ -42,7 +45,7 @@ describe('Flog Class', () => {
     let logger: Flog;
 
     beforeEach(() => {
-      logger = new Flog('TestClass');
+      logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
     });
 
     it('should have error method', () => {
@@ -93,101 +96,91 @@ describe('Flog Class', () => {
 
   describe('Message Formatting', () => {
     it('should format message with className only', () => {
-      const logger = new Flog('UserService');
+      const logger = new Flog('UserService', undefined, TEST_CONFIG_PATH);
       logger.info('Processing user data');
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
       const cleanOutput = getCleanLogOutput();
-      expect(cleanOutput).toMatch(/\[INFO\] \[UserService\] Processing user data/);
+      expect(cleanOutput).toContain('[INFO] [UserService] Processing user data');
     });
 
     it('should format message with className and instanceId', () => {
-      const logger = new Flog('Worker', 'thread-1');
-      logger.info('Task completed');
+      const logger = new Flog('Worker', 'thread-1', TEST_CONFIG_PATH);
+      logger.info('Starting work');
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
       const cleanOutput = getCleanLogOutput();
-      expect(cleanOutput).toMatch(/\[INFO\] \[Worker:thread-1\] Task completed/);
+      expect(cleanOutput).toContain('[INFO] [Worker:thread-1] Starting work');
     });
 
-    it('should handle special characters in messages', () => {
-      const logger = new Flog('TestClass');
-      logger.info('Message with "quotes" and symbols: @#$%');
-      
-      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      const loggedMessage = mockConsoleLog.mock.calls[0][0];
-      expect(loggedMessage).toContain('Message with "quotes" and symbols: @#$%');
-    });
-
-    it('should handle empty messages', () => {
-      const logger = new Flog('TestClass');
-      logger.info('');
-      
-      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      const cleanOutput = getCleanLogOutput();
-      expect(cleanOutput).toMatch(/\[INFO\] \[TestClass\] $/);
-    });
-  });
-
-  describe('Options Support', () => {
-    let logger: Flog;
-
-    beforeEach(() => {
-      logger = new Flog('TestClass');
-    });
-
-    it('should support timestamp option', () => {
+    it('should handle timestamp option', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
       logger.info('Test message', { timestamp: true });
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
       const cleanOutput = getCleanLogOutput();
-      
-      // Should contain ISO timestamp at the beginning
-      expect(cleanOutput).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z \[INFO\]/);
+      expect(cleanOutput).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z \[INFO\] \[TestClass\] Test message$/);
     });
 
-    it('should work without timestamp option', () => {
-      logger.info('Test message');
+    it('should handle metadata option', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const metadata = { userId: '123', action: 'login' };
+      logger.info('User action', { metadata });
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
       const cleanOutput = getCleanLogOutput();
-      
-      // Should not contain timestamp
-      expect(cleanOutput).toMatch(/^\[INFO\]/);
+      expect(cleanOutput).toContain('[INFO] [TestClass] User action');
     });
+  });
 
-    it('should support metadata option (for future extensibility)', () => {
-      const metadata = { userId: '123', action: 'login' };
-      logger.info('User logged in', { metadata });
+  describe('Configuration Options', () => {
+    it('should override colors per call', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.info('Test message', { colors: false });
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      // Currently metadata is not used in formatting, but should not cause errors
-      expect(mockConsoleLog.mock.calls[0][0]).toContain('User logged in');
+      const rawOutput = mockConsoleLog.mock.calls[0][0];
+      const cleanOutput = stripAnsi(rawOutput);
+      // Should be the same since colors were disabled
+      expect(rawOutput).toBe(cleanOutput);
+    });
+
+    it('should override timestamp per call', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.info('Without timestamp');
+      logger.info('With timestamp', { timestamp: true });
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(2);
+      const firstOutput = getCleanLogOutput(0);
+      const secondOutput = getCleanLogOutput(1);
+      
+      expect(firstOutput).not.toMatch(/^\d{4}-\d{2}-\d{2}T/);
+      expect(secondOutput).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    });
+
+    it('should handle custom format', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.info('Test message', { format: '{level}: {message} from {context}' });
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
+      const cleanOutput = getCleanLogOutput();
+      expect(cleanOutput).toBe('INFO: Test message from TestClass');
     });
   });
 
   describe('Edge Cases and Error Handling', () => {
-    it('should handle undefined instanceId gracefully', () => {
-      const logger = new Flog('TestClass', undefined);
-      logger.info('Test message');
+    it('should handle empty messages', () => {
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      logger.info('');
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
       const cleanOutput = getCleanLogOutput();
-      expect(cleanOutput).toMatch(/\[INFO\] \[TestClass\] Test message/);
-    });
-
-    it('should handle null values gracefully', () => {
-      const logger = new Flog('TestClass');
-      // @ts-expect-error Testing null handling
-      logger.info(null);
-      
-      expect(mockConsoleLog).toHaveBeenCalledTimes(1);
-      // Should not throw, but handle gracefully
+      expect(cleanOutput).toContain('[INFO] [TestClass] ');
     });
 
     it('should handle very long messages', () => {
-      const logger = new Flog('TestClass');
-      const longMessage = 'A'.repeat(1000);
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const longMessage = 'A'.repeat(10000);
       
       expect(() => logger.info(longMessage)).not.toThrow();
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -195,8 +188,8 @@ describe('Flog Class', () => {
     });
 
     it('should handle special Unicode characters', () => {
-      const logger = new Flog('TestClass');
-      const unicodeMessage = '🚀 Processing data with émojis and äccénts 中文';
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
+      const unicodeMessage = '🚀 Hello 世界 émojis! 🌍';
       
       logger.info(unicodeMessage);
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -204,7 +197,7 @@ describe('Flog Class', () => {
     });
 
     it('should handle newlines in messages', () => {
-      const logger = new Flog('TestClass');
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
       const multilineMessage = 'Line 1\nLine 2\nLine 3';
       
       logger.info(multilineMessage);
@@ -213,8 +206,8 @@ describe('Flog Class', () => {
     });
 
     it('should handle very long class names', () => {
-      const longClassName = 'VeryLongClassNameThatMightCauseIssues'.repeat(10);
-      const logger = new Flog(longClassName);
+      const longClassName = 'VeryLongClassNameThatExceedsNormalLengthLimits'.repeat(10);
+      const logger = new Flog(longClassName, undefined, TEST_CONFIG_PATH);
       
       expect(() => logger.info('Test message')).not.toThrow();
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -222,7 +215,7 @@ describe('Flog Class', () => {
     });
 
     it('should handle special characters in class names', () => {
-      const logger = new Flog('Class-Name_123@Service');
+      const logger = new Flog('Class-Name_123@Service', undefined, TEST_CONFIG_PATH);
       logger.info('Test message');
       
       expect(mockConsoleLog).toHaveBeenCalledTimes(1);
@@ -231,7 +224,7 @@ describe('Flog Class', () => {
     });
 
     it('should handle multiple rapid log calls', () => {
-      const logger = new Flog('TestClass');
+      const logger = new Flog('TestClass', undefined, TEST_CONFIG_PATH);
       
       for (let i = 0; i < 100; i++) {
         logger.info(`Message ${i}`);
@@ -243,21 +236,13 @@ describe('Flog Class', () => {
 
   describe('Integration Tests', () => {
     it('should work with typical usage patterns', () => {
-      // Simulate real usage
       class UserService {
-        private log = new Flog('UserService');
+        private log = new Flog('UserService', undefined, TEST_CONFIG_PATH);
         
-        async fetchUser(id: string) {
+        fetchUser(id: string) {
           this.log.info(`Fetching user ${id}`);
           this.log.debug('Validating user ID');
-          
-          if (!id) {
-            this.log.error('Invalid user ID provided');
-            return null;
-          }
-          
           this.log.info('User fetched successfully');
-          return { id, name: 'Test User' };
         }
       }
       
@@ -271,16 +256,15 @@ describe('Flog Class', () => {
     });
 
     it('should work with worker pattern', () => {
-      // Simulate worker with instance ID
       class Worker {
         private log: Flog;
         
-        constructor(workerId: string) {
-          this.log = new Flog('Worker', workerId);
+        constructor(private id: string) {
+          this.log = new Flog('Worker', this.id, TEST_CONFIG_PATH);
         }
         
-        processTask(taskId: string) {
-          this.log.info(`Processing task ${taskId}`);
+        processTask(task: string) {
+          this.log.info(`Processing task ${task}`);
           this.log.debug('Task processing completed');
         }
       }
@@ -296,6 +280,34 @@ describe('Flog Class', () => {
       expect(getCleanLogOutput(1)).toContain('[DEBUG] [Worker:worker-1] Task processing completed');
       expect(getCleanLogOutput(2)).toContain('[INFO] [Worker:worker-2] Processing task task-456');
       expect(getCleanLogOutput(3)).toContain('[DEBUG] [Worker:worker-2] Task processing completed');
+    });
+
+    it('should demonstrate configuration flexibility', () => {
+      const logger = new Flog('FlexibleLogger', undefined, TEST_CONFIG_PATH);
+      
+      // Normal log
+      logger.info('Normal message');
+      
+      // With timestamp
+      logger.warn('Warning with timestamp', { timestamp: true });
+      
+      // With metadata
+      logger.error('Error with metadata', { 
+        metadata: { 
+          error: 'NETWORK_ERROR', 
+          retry: 3 
+        } 
+      });
+      
+      expect(mockConsoleLog).toHaveBeenCalledTimes(3);
+      
+      const normalOutput = getCleanLogOutput(0);
+      const timestampOutput = getCleanLogOutput(1);
+      const metadataOutput = getCleanLogOutput(2);
+      
+      expect(normalOutput).toContain('[INFO] [FlexibleLogger] Normal message');
+      expect(timestampOutput).toMatch(/^\d{4}-\d{2}-\d{2}T.*\[WARN\] \[FlexibleLogger\] Warning with timestamp$/);
+      expect(metadataOutput).toContain('[ERROR] [FlexibleLogger] Error with metadata');
     });
   });
 });

@@ -2,7 +2,6 @@ import { ConsoleTransport } from "@/transports/console";
 import { FileTransport } from "@/transports/file";
 import { JSONTransport } from "@/transports/json";
 import { LogLevel } from "@/core/interfaces";
-import { LoggerConfigManager } from "@/core/config";
 import { Flog } from "@/core/flog";
 import { readFileSync, existsSync, unlinkSync } from "fs";
 import { join } from "path";
@@ -322,14 +321,10 @@ describe("JSONTransport", () => {
 
 describe("Transport Integration with Flog", () => {
   let logger: Flog;
-  let configManager: LoggerConfigManager;
+  const TEST_CONFIG_PATH = join(__dirname, "test-config.json");
 
   beforeEach(() => {
-    logger = new Flog("TestClass");
-    configManager = LoggerConfigManager.getInstance();
-    // Reset to default configuration
-    configManager.setLevel(LogLevel.TRACE);
-    configManager.setTransports([new ConsoleTransport()]);
+    logger = new Flog("TestClass", undefined, TEST_CONFIG_PATH);
   });
 
   it("should use configured transports", () => {
@@ -347,13 +342,9 @@ describe("Transport Integration with Flog", () => {
       const fileTransport = new FileTransport(testLogFile);
       const jsonTransport = new JSONTransport(testJsonFile);
 
-      configManager.setTransports([
-        new ConsoleTransport(),
-        fileTransport,
-        jsonTransport,
-      ]);
-
-      logger.info("Multi-transport message");
+      logger.info("Multi-transport message", {
+        transports: [new ConsoleTransport(), fileTransport, jsonTransport]
+      });
 
       // Should appear in console
       expect(mockConsoleLog).toHaveBeenCalledWith(
@@ -378,13 +369,11 @@ describe("Transport Integration with Flog", () => {
   });
 
   it("should respect log level filtering", () => {
-    configManager.setLevel(LogLevel.WARN);
-
-    logger.trace("Trace message");
-    logger.debug("Debug message");
-    logger.info("Info message");
-    logger.warn("Warning message");
-    logger.error("Error message");
+    logger.trace("Trace message", { level: LogLevel.WARN });
+    logger.debug("Debug message", { level: LogLevel.WARN });
+    logger.info("Info message", { level: LogLevel.WARN });
+    logger.warn("Warning message", { level: LogLevel.WARN });
+    logger.error("Error message", { level: LogLevel.WARN });
 
     expect(mockConsoleLog).toHaveBeenCalledTimes(2);
     expect(mockConsoleLog).toHaveBeenNthCalledWith(
@@ -400,9 +389,8 @@ describe("Transport Integration with Flog", () => {
   it("should handle transport failures gracefully", () => {
     // Create a transport that will fail
     const failingTransport = new FileTransport("/invalid/path/test.log");
-    configManager.setTransports([failingTransport]);
 
-    expect(() => logger.info("Test message")).not.toThrow();
+    expect(() => logger.info("Test message", { transports: [failingTransport] })).not.toThrow();
     expect(mockConsoleError).toHaveBeenCalledWith(
       "Failed to write to log file:",
       expect.objectContaining({ message: expect.any(String) })
@@ -414,10 +402,9 @@ describe("Transport Integration with Flog", () => {
 
     try {
       const jsonTransport = new JSONTransport(testJsonFile);
-      configManager.setTransports([jsonTransport]);
-
+      
       const metadata = { userId: "123", action: "test" };
-      logger.info("Test message", { metadata });
+      logger.info("Test message", { metadata, transports: [jsonTransport] });
 
       const content = readFileSync(testJsonFile, "utf-8");
       const jsonEntry = JSON.parse(content.trim());
