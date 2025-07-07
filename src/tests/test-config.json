@@ -1,0 +1,10 @@
+{
+  "level": "TRACE",
+  "timestamp": false,
+  "colors": true,
+  "transports": [
+    {
+      "type": "console"
+    }
+  ]
+}

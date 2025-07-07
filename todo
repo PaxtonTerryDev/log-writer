@@ -1,0 +1,2 @@
+- enhance the type safety of the system by including an ExportTransport (name pending) interface that is implemented by the json and file transports.  
+- Are http / https transports common?  Like you are forwarding your logs to an external endpoint? That seems turbo heavy, but maybe that's common.
