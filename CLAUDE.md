@@ -35,7 +35,7 @@ Create a TypeScript logging library optimized for object-oriented codebases that
 ### 1. Primary Logging Interface
 
 ```typescript
-class Flog {
+class LogWriter {
   constructor(className: string, instanceId?: string);
 
   // Standard log levels
@@ -72,10 +72,10 @@ class Flog {
 
 ### Core Classes
 
-**Flog Class** (Primary Interface)
+**LogWriter Class** (Primary Interface)
 
 ```typescript
-export class Flog {
+export class LogWriter {
   constructor(private className: string, private instanceId?: string) {}
 
   private formatMessage(level: LogLevel, message: string): string {
@@ -122,7 +122,7 @@ class JSONTransport implements Transport;
 
 ```typescript
 class UserService {
-  log = new Flog("UserService");
+  log = new LogWriter("UserService");
 
   getUser(id: string) {
     this.log.info(`Fetching user ${id}`);
@@ -135,7 +135,7 @@ class UserService {
 
 ```typescript
 class Worker {
-  log = new Flog("Worker", `thread-${threadId}`);
+  log = new LogWriter("Worker", `thread-${threadId}`);
 
   processTask() {
     this.log.info("Processing task");
@@ -147,7 +147,7 @@ class Worker {
 
 ```typescript
 class UtilityClass {
-  private static log = new Flog("UtilityClass");
+  private static log = new LogWriter("UtilityClass");
 
   static processData() {
     this.log.info("Processing data");
@@ -204,7 +204,7 @@ class UtilityClass {
 ```
 src/
 ├── core/
-│   ├── flog.ts           # Main Flog class
+│   ├── logwriter.ts      # Main LogWriter class
 │   ├── interfaces.ts     # Core interfaces (Loggable, Transport, etc.)
 │   └── config.ts         # Configuration management
 ├── transports/
@@ -220,7 +220,7 @@ src/
 
 ## Success Criteria
 
-1. **Simple API**: `new Flog("ClassName")` works immediately
+1. **Simple API**: `new LogWriter("ClassName")` works immediately
 2. **Performance**: No measurable overhead in production builds
 3. **Reliability**: Consistent behavior across all JavaScript environments
 4. **Type Safety**: Full TypeScript support with no `any` types in public API

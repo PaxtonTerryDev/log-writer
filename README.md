@@ -109,9 +109,9 @@ This will result in a clear, instance-specific log output:
 
 ### File-Based Configuration
 
-`LogWriter` supports file-based configuration through a `LogWriter.config.json` file. The library automatically searches for this file starting from the current working directory up to the root directory.
+`LogWriter` supports file-based configuration through a `logwriter.config.json` file. The library automatically searches for this file starting from the current working directory up to the root directory.
 
-Create a `LogWriter.config.json` file in your project root:
+Create a `logwriter.config.json` file in your project root:
 
 ```json
 {
