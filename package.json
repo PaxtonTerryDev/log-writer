@@ -1,6 +1,6 @@
 {
   "name": "logwriter",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A TypeScript class-aware logging library that provides clear context in log outputs with flexible configuration options.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
