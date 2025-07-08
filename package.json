@@ -1,19 +1,35 @@
 {
   "name": "logwriter",
   "version": "1.0.0",
-  "description": "",
+  "description": "A TypeScript class-aware logging library that provides clear context in log outputs with flexible configuration options.",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsx --watch src/index.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --watchAll=false"
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "prePublish": "pnpm test && pnpm build"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "typescript",
+    "logging",
+    "logger",
+    "class",
+    "context",
+    "log"
+  ],
+  "author": "Paxton Terry <117777648+PaxtonTerryDev@users.noreply.github.com>",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PaxtonTerryDev/log-writer.git"
+  },
   "packageManager": "pnpm@10.9.0",
   "devDependencies": {
     "@types/jest": "^30.0.0",
