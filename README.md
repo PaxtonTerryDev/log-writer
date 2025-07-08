@@ -1,4 +1,6 @@
-# LogWriter
+# LogRider
+
+The name is inspired by Hog Rider, the best Clash of Clans troop. Also, the name `LogWriter` was already taken. Don't worry though, I named everything else normally!
 
 A TypeScript class-aware logging library that provides clear context in log outputs with flexible configuration options.
 
@@ -18,16 +20,14 @@ A TypeScript class-aware logging library that provides clear context in log outp
 
 ## Installation
 
-_(Note: The package is not yet published to npm, but this shows the intended installation.)_
-
 Install `LogWriter` using your favorite package manager:
 
 ```bash
-npm install LogWriter
+npm install logrider
 # or
-pnpm add LogWriter
+pnpm add logrider
 # or
-yarn add LogWriter
+yarn add logrider
 ```
 
 ## Quick Start

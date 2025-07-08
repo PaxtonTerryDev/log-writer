@@ -1,5 +1,5 @@
 {
-  "name": "logwriter",
+  "name": "logrider",
   "version": "0.0.1",
   "description": "A TypeScript class-aware logging library that provides clear context in log outputs with flexible configuration options.",
   "main": "dist/index.js",
@@ -28,7 +28,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/PaxtonTerryDev/log-writer.git"
+    "url": "https://github.com/PaxtonTerryDev/logrider.git"
   },
   "packageManager": "pnpm@10.9.0",
   "devDependencies": {
