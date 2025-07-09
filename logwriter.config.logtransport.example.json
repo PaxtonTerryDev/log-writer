@@ -1,0 +1,86 @@
+{
+  "level": "INFO",
+  "timestamp": false,
+  "colors": true,
+  "transports": {
+    "console": {
+      "type": "console"
+    },
+    "app-logs": {
+      "type": "log",
+      "path": "./logs/app.log",
+      "method": "size",
+      "maxSize": "10MB",
+      "maxFiles": 5,
+      "archive": {
+        "enabled": true,
+        "directory": "./logs/archive",
+        "compress": true,
+        "retentionDays": 30
+      }
+    },
+    "daily-logs": {
+      "type": "log",
+      "path": "./logs/daily.log", 
+      "method": "date",
+      "dateFormat": "YYYY-MM-DD",
+      "maxFiles": 30,
+      "archive": {
+        "enabled": true,
+        "directory": "./logs/archive/daily",
+        "compress": true,
+        "retentionDays": 90
+      }
+    },
+    "hourly-debug": {
+      "type": "log",
+      "path": "./logs/debug.log",
+      "method": "date",
+      "dateFormat": "YYYY-MM-DD-HH",
+      "maxFiles": 168,
+      "levels": {
+        "include": ["DEBUG", "TRACE"]
+      },
+      "archive": {
+        "enabled": true,
+        "directory": "./logs/archive/debug", 
+        "compress": true,
+        "retentionDays": 7
+      }
+    },
+    "errors": {
+      "type": "log",
+      "path": "./logs/errors.log",
+      "method": "size",
+      "maxSize": "5MB",
+      "maxFiles": 10,
+      "levels": {
+        "include": ["ERROR", "WARN"]
+      },
+      "archive": {
+        "enabled": true,
+        "directory": "./logs/archive/errors",
+        "compress": true,
+        "retentionDays": 365
+      }
+    },
+    "simple-logs": {
+      "type": "log",
+      "path": "./logs/simple.log",
+      "method": "size", 
+      "maxSize": "1MB",
+      "maxFiles": 3,
+      "archive": {
+        "enabled": false
+      }
+    },
+    "legacy-file": {
+      "type": "file",
+      "path": "./logs/legacy.log",
+      "levels": {
+        "exclude": ["DEBUG", "TRACE"]
+      }
+    }
+  },
+  "defaultTransports": ["console", "app-logs", "errors"]
+}
