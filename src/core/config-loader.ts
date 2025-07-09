@@ -4,6 +4,7 @@ import { LogLevel, LoggerConfig, FileConfig, TransportConfig, Transport, ColorCo
 import { ConsoleTransport } from '../transports/console';
 import { FileTransport } from '../transports/file';
 import { JSONTransport } from '../transports/json';
+import { LogTransport, RotationMethod } from '../transports/log';
 
 export class ConfigLoader {
   private static readonly CONFIG_FILE_NAME = 'logwriter.config.json';
@@ -145,9 +146,44 @@ export class ConfigLoader {
           throw new Error(`JSON transport '${name}' requires path`);
         }
         return new JSONTransport(config.path, name, levelFilter);
+      case 'log':
+        return this.createLogTransport(config, name, levelFilter);
       default:
         throw new Error(`Unknown transport type for '${name}': ${(config as any).type}`);
     }
+  }
+
+  /**
+   * Creates a LogTransport instance from configuration
+   */
+  private static createLogTransport(config: TransportConfig, name: string, levelFilter?: LevelFilter): LogTransport {
+    if (!config.path) {
+      throw new Error(`LogTransport '${name}' requires path`);
+    }
+
+    if (!config.method) {
+      throw new Error(`LogTransport '${name}' requires method (size or date)`);
+    }
+
+    // Convert string method to enum
+    const method = config.method === 'size' ? RotationMethod.SIZE : 
+                   config.method === 'date' ? RotationMethod.DATE :
+                   (() => { throw new Error(`Invalid rotation method '${config.method}' for LogTransport '${name}'`); })();
+
+    // Build LogTransport options with defaults
+    const logOptions: any = {
+      method, // Always required
+    };
+
+    // Add optional properties only if they exist
+    if (config.maxSize !== undefined) logOptions.maxSize = config.maxSize;
+    if (config.maxFiles !== undefined) logOptions.maxFiles = config.maxFiles;
+    if (config.dateFormat !== undefined) logOptions.dateFormat = config.dateFormat;
+    if (config.archive?.directory !== undefined) logOptions.archiveDir = config.archive.directory;
+    if (config.archive?.compress !== undefined) logOptions.compress = config.archive.compress;
+    if (config.archive?.retentionDays !== undefined) logOptions.retentionDays = config.archive.retentionDays;
+
+    return new LogTransport(config.path, logOptions, name, levelFilter);
   }
 
   /**

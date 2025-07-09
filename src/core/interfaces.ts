@@ -49,11 +49,24 @@ export interface FileConfig {
   defaultTransports?: string[];
 }
 
+export interface LogTransportArchiveConfig {
+  enabled?: boolean;
+  directory?: string;
+  compress?: boolean;
+  retentionDays?: number;
+}
+
 export interface TransportConfig {
-  type: 'console' | 'file' | 'json';
+  type: 'console' | 'file' | 'json' | 'log';
   path?: string;
   levels?: LevelFilter;
   options?: Record<string, any>;
+  // LogTransport specific options
+  method?: 'size' | 'date';
+  maxSize?: string;
+  maxFiles?: number;
+  dateFormat?: 'YYYY-MM-DD' | 'YYYY-MM-DD-HH' | 'YYYY-MM';
+  archive?: LogTransportArchiveConfig;
 }
 
 export interface LevelFilter {
