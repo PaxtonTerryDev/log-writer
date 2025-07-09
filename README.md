@@ -15,7 +15,7 @@ A TypeScript class-aware logging library that provides clear context in log outp
 - **Multiple Transports**: Console, file, JSON, and rotating log destinations
 - **Log Rotation & Archiving**: Automatic file rotation with size or date-based strategies, compression, and retention policies
 - **Level Filtering**: Per-transport level filtering and global level controls
-- **Colored Output**: Level-based color coding for improved readability in the console
+- **Colored Output**: Level-based color coding with per-transport color configuration
 - **Standard Log Levels**: Supports `error`, `warn`, `info`, `debug`, and `trace`
 - **Optional Timestamps**: Add timestamps to your logs when needed
 - **Customizable Output**: Control which parts of the log format are included
@@ -177,6 +177,7 @@ Create a `logwriter.config.json` file in your project root:
 ```json
 {
   "type": "console",
+  "colors": true,
   "levels": {
     "include": ["ERROR", "WARN", "INFO"]
   }
@@ -189,6 +190,7 @@ Create a `logwriter.config.json` file in your project root:
 {
   "type": "file",
   "path": "./logs/app.log",
+  "colors": false,
   "levels": {
     "exclude": ["DEBUG", "TRACE"]
   }
@@ -201,6 +203,7 @@ Create a `logwriter.config.json` file in your project root:
 {
   "type": "json",
   "path": "./logs/structured.json",
+  "colors": false,
   "levels": {
     "include": ["ERROR", "WARN"]
   }
@@ -220,6 +223,7 @@ The `log` transport provides automatic file rotation, archiving, and intelligent
   "method": "size",
   "maxSize": "10MB",
   "maxFiles": 5,
+  "colors": false,
   "archive": {
     "enabled": true,
     "directory": "./logs/archive",
@@ -238,6 +242,7 @@ The `log` transport provides automatic file rotation, archiving, and intelligent
   "method": "date",
   "dateFormat": "YYYY-MM-DD",
   "maxFiles": 30,
+  "colors": false,
   "archive": {
     "enabled": true,
     "directory": "./logs/archive/daily",
@@ -275,6 +280,58 @@ Each transport can have its own level filtering:
 - `exclude`: Output all levels except these
 
 Note: `include` and `exclude` are mutually exclusive.
+
+### Color Configuration
+
+Each transport can have its own color configuration, allowing you to enable colors for console output while disabling them for file outputs:
+
+```json
+{
+  "transports": {
+    "console": {
+      "type": "console",
+      "colors": true
+    },
+    "file": {
+      "type": "file",
+      "path": "./logs/app.log",
+      "colors": false
+    },
+    "coloredFile": {
+      "type": "file",
+      "path": "./logs/debug.log",
+      "colors": true
+    }
+  }
+}
+```
+
+**Default Color Settings:**
+
+- **Console transport**: `colors: true` (enabled by default)
+- **File transport**: `colors: false` (disabled by default)
+- **JSON transport**: `colors: false` (disabled by default)
+- **Log transport**: `colors: false` (disabled by default)
+
+**Custom Color Configuration:**
+You can also specify custom colors for each log level:
+
+```json
+{
+  "transports": {
+    "console": {
+      "type": "console",
+      "colors": {
+        "ERROR": "red",
+        "WARN": "yellow",
+        "INFO": "blue",
+        "DEBUG": "green",
+        "TRACE": "gray"
+      }
+    }
+  }
+}
+```
 
 ### Runtime Configuration
 
@@ -326,10 +383,8 @@ interface LogOptions {
   colors?: boolean; // Override color usage
   transports?: (Transport | string)[]; // Override transports
   format?: string; // Override message format
-  level?: LogLevel; // Override minimum level check
-  colors?: boolean; // Override color usage
-  transports?: (Transport | string)[]; // Override transports
-  format?: string; // Override message format
+  includeLevel?: boolean; // Override includeLevel from config
+  includeName?: boolean; // Override includeName from config
 }
 ```
 
@@ -435,6 +490,7 @@ Here's a comprehensive configuration suitable for production applications:
   "transports": {
     "console": {
       "type": "console",
+      "colors": true,
       "levels": {
         "include": ["ERROR", "WARN", "INFO"]
       }
@@ -445,6 +501,7 @@ Here's a comprehensive configuration suitable for production applications:
       "method": "size",
       "maxSize": "50MB",
       "maxFiles": 10,
+      "colors": false,
       "archive": {
         "enabled": true,
         "directory": "./logs/archive",
@@ -458,6 +515,7 @@ Here's a comprehensive configuration suitable for production applications:
       "method": "date",
       "dateFormat": "YYYY-MM-DD",
       "maxFiles": 365,
+      "colors": false,
       "levels": {
         "include": ["ERROR", "WARN"]
       },
@@ -471,6 +529,7 @@ Here's a comprehensive configuration suitable for production applications:
     "audit": {
       "type": "json",
       "path": "./logs/audit.json",
+      "colors": false,
       "levels": {
         "exclude": ["DEBUG", "TRACE"]
       }
@@ -495,6 +554,38 @@ log.error("Payment processing failed", {
 log.debug("Payment validation passed", {
   transports: ["console"],
 });
+```
+
+### Programmatic Color Configuration
+
+```typescript
+import { LogWriter, ConsoleTransport, FileTransport } from "LogWriter";
+
+// Create transports with different color settings
+const consoleTransport = new ConsoleTransport("console", undefined, true);
+const fileTransport = new FileTransport("./app.log", "file", undefined, false);
+const coloredFileTransport = new FileTransport(
+  "./debug.log",
+  "coloredFile",
+  undefined,
+  true
+);
+
+const log = new LogWriter("MyService");
+
+// Update configuration to use custom transports
+log.setConfig({
+  ...log.getConfig(),
+  transports: {
+    console: consoleTransport,
+    file: fileTransport,
+    coloredFile: coloredFileTransport,
+  },
+});
+
+// Console output will have colors, file output won't
+log.setDefaultTransports(["console", "file"]);
+log.info("This message shows colors in console but not in file");
 ```
 
 ## TypeScript Support
