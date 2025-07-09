@@ -1,4 +1,5 @@
-import { Transport, LogLevel, LevelFilter } from '../core/interfaces';
+import { Transport, LogLevel, LevelFilter, ColorConfig, LogOptions } from '../core/interfaces';
+import { ColorUtils } from '../utils/colors';
 import {
   writeFileSync,
   appendFileSync,
@@ -37,6 +38,7 @@ export interface LogTransportOptions {
 export class LogTransport implements Transport {
   private filePath: string;
   public name?: string;
+  public colors?: boolean | ColorConfig;
   private levelFilter?: LevelFilter;
   private options: LogTransportOptions;
   private currentDateString?: string; // Track current date for date-based rotation
@@ -45,11 +47,13 @@ export class LogTransport implements Transport {
     filePath: string,
     options: LogTransportOptions,
     name?: string,
-    levelFilter?: LevelFilter
+    levelFilter?: LevelFilter,
+    colors?: boolean | ColorConfig
   ) {
     this.filePath = filePath;
     this.name = name;
     this.levelFilter = levelFilter;
+    this.colors = colors;
 
     // Set defaults based on rotation method
     const defaultArchiveDir = join(process.cwd(), 'logs', this.name || 'archive');
@@ -88,6 +92,33 @@ export class LogTransport implements Transport {
     }
 
     return true;
+  }
+
+  formatMessage(level: LogLevel, rawMessage: string, context: string, timestamp: string, options?: LogOptions): string {
+    const useColors = this.colors ?? false; // Default to false for log file output
+    const includeLevel = options?.includeLevel ?? true;
+    const includeName = options?.includeName ?? true;
+    
+    // Handle custom format override
+    if (options?.format) {
+      return this.applyCustomFormat(options.format, level, context, rawMessage, timestamp);
+    }
+    
+    const levelStr = useColors ? ColorUtils.colorizeLevel(level) : level;
+    const contextStr = useColors ? ColorUtils.colorizeContext(context) : context;
+    const messageStr = useColors ? ColorUtils.colorizeMessage(level, rawMessage) : rawMessage;
+    
+    const levelPart = includeLevel ? `[${levelStr}] ` : '';
+    const namePart = includeName ? `[${contextStr}] ` : '';
+    return `${timestamp}${levelPart}${namePart}${messageStr}`;
+  }
+
+  private applyCustomFormat(format: string, level: LogLevel, context: string, message: string, timestamp: string): string {
+    return format
+      .replace('{timestamp}', timestamp.trim())
+      .replace('{level}', level)
+      .replace('{context}', context)
+      .replace('{message}', message);
   }
 
   write(

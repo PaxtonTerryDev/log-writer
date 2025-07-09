@@ -13,12 +13,16 @@ export interface LogOptions {
   colors?: boolean;              // Override color usage
   transports?: (Transport | string)[];  // Override transports (instances or names)
   format?: string;               // Override message format
+  includeLevel?: boolean;        // Override includeLevel from config
+  includeName?: boolean;         // Override includeName from config
 }
 
 export interface Transport {
   write(level: LogLevel, message: string, metadata?: Record<string, any>): void;
   shouldLog?(level: LogLevel): boolean;  // Optional level filtering
   name?: string;                         // Optional transport name
+  colors?: boolean | ColorConfig;        // Optional color configuration
+  formatMessage?(level: LogLevel, rawMessage: string, context: string, timestamp: string, options?: LogOptions): string;
 }
 
 export interface LoggerConfig {
@@ -60,6 +64,7 @@ export interface TransportConfig {
   type: 'console' | 'file' | 'json' | 'log';
   path?: string;
   levels?: LevelFilter;
+  colors?: boolean | ColorConfig;        // Optional color configuration
   options?: Record<string, any>;
   // LogTransport specific options
   method?: 'size' | 'date';

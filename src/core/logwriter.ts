@@ -15,13 +15,25 @@ export class LogWriter {
     this.defaultTransportNames = defaultTransportNames || this.config.defaultTransports;
   }
 
-  private formatMessage(level: LogLevel, message: string, options?: LogOptions): string {
+  private formatMessage(level: LogLevel, message: string, transport: Transport, options?: LogOptions): string {
     const context = this.buildContext();
     const useTimestamp = options?.timestamp ?? this.config.timestamp;
-    const useColors = options?.colors ?? this.config.colors;
-    const includeLevel = this.config.includeLevel;
-    const includeName = this.config.includeName;
     const timestamp = useTimestamp ? this.formatTimestamp() : '';
+    
+    // If the transport has its own formatMessage method, use it with per-transport options
+    if (transport.formatMessage) {
+      const transportOptions = {
+        ...options,
+        includeLevel: options?.includeLevel ?? this.config.includeLevel,
+        includeName: options?.includeName ?? this.config.includeName
+      };
+      return transport.formatMessage(level, message, context, timestamp, transportOptions);
+    }
+    
+    // Fallback to original formatting for transports that don't implement formatMessage
+    const useColors = options?.colors ?? this.config.colors;
+    const includeLevel = options?.includeLevel ?? this.config.includeLevel;
+    const includeName = options?.includeName ?? this.config.includeName;
     
     // Handle custom format override
     if (options?.format) {
@@ -54,10 +66,10 @@ export class LogWriter {
       return;
     }
     
-    const formattedMessage = this.formatMessage(level, message, options);
     const transports = this.resolveTransports(options?.transports);
     
     transports.forEach(transport => {
+      const formattedMessage = this.formatMessage(level, message, transport, options);
       transport.write(level, formattedMessage, options?.metadata);
     });
   }

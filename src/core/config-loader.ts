@@ -135,17 +135,17 @@ export class ConfigLoader {
     
     switch (config.type) {
       case 'console':
-        return new ConsoleTransport(name, levelFilter);
+        return new ConsoleTransport(name, levelFilter, config.colors);
       case 'file':
         if (!config.path) {
           throw new Error(`File transport '${name}' requires path`);
         }
-        return new FileTransport(config.path, name, levelFilter);
+        return new FileTransport(config.path, name, levelFilter, config.colors);
       case 'json':
         if (!config.path) {
           throw new Error(`JSON transport '${name}' requires path`);
         }
-        return new JSONTransport(config.path, name, levelFilter);
+        return new JSONTransport(config.path, name, levelFilter, config.colors);
       case 'log':
         return this.createLogTransport(config, name, levelFilter);
       default:
@@ -183,7 +183,7 @@ export class ConfigLoader {
     if (config.archive?.compress !== undefined) logOptions.compress = config.archive.compress;
     if (config.archive?.retentionDays !== undefined) logOptions.retentionDays = config.archive.retentionDays;
 
-    return new LogTransport(config.path, logOptions, name, levelFilter);
+    return new LogTransport(config.path, logOptions, name, levelFilter, config.colors);
   }
 
   /**
