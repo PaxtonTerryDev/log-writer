@@ -1,6 +1,7 @@
 # LogRider
 
 The name is inspired by Hog Rider, the best Clash of Clans troop. Also, the name `LogWriter` was already taken. Don't worry though, I named everything else normally!
+The name is inspired by Hog Rider, the best Clash of Clans troop. Also, the name `LogWriter` was already taken. Don't worry though, I named everything else normally!
 
 A TypeScript class-aware logging library that provides clear context in log outputs with flexible configuration options.
 
@@ -11,12 +12,14 @@ A TypeScript class-aware logging library that provides clear context in log outp
 - **Class and Instance Context**: Explicitly associate logs with the class and even specific instances that generate them
 - **Simple API**: Get started immediately with an intuitive and clean API
 - **Flexible Configuration**: File-based configuration with runtime overrides
-- **Multiple Transports**: Console, file, and JSON output destinations
+- **Multiple Transports**: Console, file, JSON, and rotating log destinations
+- **Log Rotation & Archiving**: Automatic file rotation with size or date-based strategies, compression, and retention policies
 - **Level Filtering**: Per-transport level filtering and global level controls
 - **Colored Output**: Level-based color coding for improved readability in the console
 - **Standard Log Levels**: Supports `error`, `warn`, `info`, `debug`, and `trace`
 - **Optional Timestamps**: Add timestamps to your logs when needed
 - **Customizable Output**: Control which parts of the log format are included
+- **Production Ready**: Built-in safeguards prevent disk space issues with intelligent log management
 
 ## Installation
 
@@ -24,9 +27,12 @@ Install `LogWriter` using your favorite package manager:
 
 ```bash
 npm install logrider
+npm install logrider
 # or
 pnpm add logrider
+pnpm add logrider
 # or
+yarn add logrider
 yarn add logrider
 ```
 
@@ -154,6 +160,15 @@ Create a `logwriter.config.json` file in your project root:
 | `includeName`       | boolean  | `true`        | Include `[ClassName]` in log output |
 | `transports`        | object   | -             | Named transport configurations      |
 | `defaultTransports` | string[] | `["console"]` | Default transports to use           |
+| Option              | Type     | Default       | Description                         |
+| ------------------- | -------- | ------------- | ----------------------------------- |
+| `level`             | string   | `"INFO"`      | Minimum log level to output         |
+| `timestamp`         | boolean  | `false`       | Include timestamps in log output    |
+| `colors`            | boolean  | `true`        | Enable colored output               |
+| `includeLevel`      | boolean  | `true`        | Include `[LEVEL]` in log output     |
+| `includeName`       | boolean  | `true`        | Include `[ClassName]` in log output |
+| `transports`        | object   | -             | Named transport configurations      |
+| `defaultTransports` | string[] | `["console"]` | Default transports to use           |
 
 ### Transport Types
 
@@ -192,6 +207,66 @@ Create a `logwriter.config.json` file in your project root:
 }
 ```
 
+#### Log Transport (Rotating Files)
+
+The `log` transport provides automatic file rotation, archiving, and intelligent log management - perfect for production applications.
+
+**Size-based Rotation:**
+
+```json
+{
+  "type": "log",
+  "path": "./logs/app.log",
+  "method": "size",
+  "maxSize": "10MB",
+  "maxFiles": 5,
+  "archive": {
+    "enabled": true,
+    "directory": "./logs/archive",
+    "compress": true,
+    "retentionDays": 30
+  }
+}
+```
+
+**Date-based Rotation:**
+
+```json
+{
+  "type": "log",
+  "path": "./logs/daily.log",
+  "method": "date",
+  "dateFormat": "YYYY-MM-DD",
+  "maxFiles": 30,
+  "archive": {
+    "enabled": true,
+    "directory": "./logs/archive/daily",
+    "compress": true,
+    "retentionDays": 90
+  }
+}
+```
+
+**Log Transport Options:**
+
+| Option                  | Type                 | Default                     | Description                                                               |
+| ----------------------- | -------------------- | --------------------------- | ------------------------------------------------------------------------- |
+| `method`                | `"size"` \| `"date"` | -                           | **Required.** Rotation strategy                                           |
+| `maxSize`               | string               | `"10MB"`                    | Maximum file size (for size method)                                       |
+| `maxFiles`              | number               | `5`                         | Number of rotated files to keep                                           |
+| `dateFormat`            | string               | `"YYYY-MM-DD"`              | Date format for rotation (`"YYYY-MM-DD"`, `"YYYY-MM-DD-HH"`, `"YYYY-MM"`) |
+| `archive.enabled`       | boolean              | `true`                      | Enable archiving of rotated files                                         |
+| `archive.directory`     | string               | `"./logs/{transport-name}"` | Directory for archived files                                              |
+| `archive.compress`      | boolean              | `true`                      | Compress archived files with gzip                                         |
+| `archive.retentionDays` | number               | `30`                        | Days to keep archived files (0 = forever)                                 |
+
+**Why Use Log Transport?**
+
+- **Prevents disk space issues** - Automatic rotation prevents unbounded file growth
+- **Production ready** - Handles compression, archiving, and cleanup automatically
+- **Developer friendly** - Sensible defaults work out of the box
+- **Configurable** - Fine-tune rotation, compression, and retention policies
+
 ### Level Filtering
 
 Each transport can have its own level filtering:
@@ -212,6 +287,7 @@ const log = new LogWriter("MyClass");
 log.setConfig({
   includeLevel: false,
   includeName: false,
+  timestamp: true,
   timestamp: true,
 });
 
@@ -246,6 +322,10 @@ You can pass an options object as the second argument to any log method.
 interface LogOptions {
   timestamp?: boolean;
   metadata?: Record<string, any>;
+  level?: LogLevel; // Override minimum level check
+  colors?: boolean; // Override color usage
+  transports?: (Transport | string)[]; // Override transports
+  format?: string; // Override message format
   level?: LogLevel; // Override minimum level check
   colors?: boolean; // Override color usage
   transports?: (Transport | string)[]; // Override transports
@@ -314,64 +394,25 @@ const transports = log.getTransportNames();
 ### With Timestamp
 
 ```
-2025-07-02T12:00:00.000Z [INFO] [MyClass] This is a timed log entry.
+2025-07-07T12:00:00.000Z [INFO] [UserService] Fetching user data
 ```
 
-## Configuration and Transports
+### With Instance ID
 
-`flog` supports multiple output targets through its transport system. You can configure where your logs are written and how they're formatted.
-
-### Default Configuration
-
-By default, `flog` uses console output with colored messages. You can access the global configuration through the `LoggerConfigManager`.
-
-```typescript
-import { LoggerConfigManager, LogLevel } from "flog";
-
-const configManager = LoggerConfigManager.getInstance();
-
-// Set minimum log level
-configManager.setLevel(LogLevel.INFO);
-
-// Enable/disable timestamps globally
-configManager.setTimestamp(true);
-
-// Enable/disable colors
-configManager.setColors(false);
+```
+[INFO] [Worker:thread-1] Processing task
 ```
 
-### Available Transports
+### Without Level (includeLevel: false)
 
-`flog` includes three built-in transport types:
-
-#### Console Transport
-
-Outputs logs to the console with optional color coding.
-
-```typescript
-import { ConsoleTransport } from "flog";
-
-const consoleTransport = new ConsoleTransport();
+```
+[UserService] Fetching user data
 ```
 
-#### File Transport
+### Without Name (includeName: false)
 
-Writes logs to a file with timestamps.
-
-```typescript
-import { FileTransport } from "flog";
-
-const fileTransport = new FileTransport("./logs/app.log");
 ```
-
-#### JSON Transport
-
-Writes structured JSON logs to a file, perfect for log analysis tools.
-
-```typescript
-import { JSONTransport } from "flog";
-
-const jsonTransport = new JSONTransport("./logs/app.json");
+[INFO] Fetching user data
 ```
 
 ### Minimal Format (both disabled)
@@ -381,6 +422,63 @@ Fetching user data
 ```
 
 ## Advanced Usage
+
+### Production Configuration Example
+
+Here's a comprehensive configuration suitable for production applications:
+
+```json
+{
+  "level": "INFO",
+  "timestamp": true,
+  "colors": false,
+  "transports": {
+    "console": {
+      "type": "console",
+      "levels": {
+        "include": ["ERROR", "WARN", "INFO"]
+      }
+    },
+    "app-logs": {
+      "type": "log",
+      "path": "./logs/app.log",
+      "method": "size",
+      "maxSize": "50MB",
+      "maxFiles": 10,
+      "archive": {
+        "enabled": true,
+        "directory": "./logs/archive",
+        "compress": true,
+        "retentionDays": 90
+      }
+    },
+    "error-logs": {
+      "type": "log",
+      "path": "./logs/errors.log",
+      "method": "date",
+      "dateFormat": "YYYY-MM-DD",
+      "maxFiles": 365,
+      "levels": {
+        "include": ["ERROR", "WARN"]
+      },
+      "archive": {
+        "enabled": true,
+        "directory": "./logs/archive/errors",
+        "compress": true,
+        "retentionDays": 365
+      }
+    },
+    "audit": {
+      "type": "json",
+      "path": "./logs/audit.json",
+      "levels": {
+        "exclude": ["DEBUG", "TRACE"]
+      }
+    }
+  },
+  "defaultTransports": ["console", "app-logs", "error-logs"]
+}
+```
 
 ### Multiple Transport Example
 
@@ -404,7 +502,13 @@ log.debug("Payment validation passed", {
 `LogWriter` is built with TypeScript and provides full type safety:
 
 ```typescript
-import { LogWriter, LogLevel, LogOptions } from "LogWriter";
+import {
+  LogWriter,
+  LogLevel,
+  LogOptions,
+  LogTransport,
+  RotationMethod,
+} from "LogWriter";
 
 const log = new LogWriter("TypedService");
 
@@ -413,9 +517,20 @@ const options: LogOptions = {
   timestamp: true,
   metadata: { userId: 123 },
   level: LogLevel.DEBUG,
+  level: LogLevel.DEBUG,
 };
 
 log.info("Typed message", options);
+
+// You can also use LogTransport directly for programmatic configuration
+const rotatingTransport = new LogTransport("./logs/app.log", {
+  method: RotationMethod.SIZE,
+  maxSize: "10MB",
+  maxFiles: 5,
+  archiveDir: "./logs/archive",
+  compress: true,
+  retentionDays: 30,
+});
 ```
 
 ## Testing
@@ -431,6 +546,7 @@ const mockLog = {
   warn: jest.fn(),
   info: jest.fn(),
   debug: jest.fn(),
+  trace: jest.fn(),
   trace: jest.fn(),
 } as unknown as LogWriter;
 
