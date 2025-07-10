@@ -1,4 +1,4 @@
-export { Log } from './core/log';
+export { Log, LogWriter } from './core/log';
 export {
   LogLevel,
   LogOptions,

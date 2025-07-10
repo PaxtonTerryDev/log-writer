@@ -172,3 +172,14 @@ export class Log {
     return resolvedTransports;
   }
 }
+
+/**
+ * @deprecated LogWriter has been renamed to Log. Please use Log instead.
+ * This alias will be removed in a future version.
+ */
+export class LogWriter extends Log {
+  constructor(className: string, instanceId?: string, configPath?: string, defaultTransportNames?: string[]) {
+    super(className, instanceId, configPath, defaultTransportNames);
+    console.warn(`[DEPRECATED] LogWriter is deprecated. Please use Log instead. LogWriter will be removed in a future version.`);
+  }
+}
