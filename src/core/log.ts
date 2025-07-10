@@ -2,7 +2,7 @@ import { LogLevel, LogOptions, LoggerConfig, Transport } from './interfaces';
 import { ColorUtils } from '../utils/colors';
 import { ConfigLoader } from './config-loader';
 
-export class LogWriter {
+export class Log {
   private className: string;
   private instanceId?: string;
   private config: LoggerConfig;

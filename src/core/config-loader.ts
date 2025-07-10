@@ -7,7 +7,7 @@ import { JSONTransport } from '../transports/json';
 import { LogTransport, RotationMethod } from '../transports/log';
 
 export class ConfigLoader {
-  private static readonly CONFIG_FILE_NAME = 'logwriter.config.json';
+  private static readonly CONFIG_FILE_NAME = 'logrider.config.json';
   private static readonly DEFAULT_CONFIG: LoggerConfig = {
     level: LogLevel.INFO,
     timestamp: false,
@@ -21,7 +21,7 @@ export class ConfigLoader {
   };
 
   /**
-   * Loads configuration from logwriter.config.json file, falling back to defaults
+   * Loads configuration from logrider.config.json file, falling back to defaults
    */
   static loadConfig(configPath?: string): LoggerConfig {
     const filePath = configPath || this.findConfigFile();
@@ -36,13 +36,13 @@ export class ConfigLoader {
       
       return this.mergeWithDefaults(fileConfig);
     } catch (error) {
-      console.warn(`Failed to load LogWriter config from ${filePath}:`, error);
+      console.warn(`Failed to load LogRider config from ${filePath}:`, error);
       return { ...this.DEFAULT_CONFIG };
     }
   }
 
   /**
-   * Finds logwriter.config.json file starting from current directory up to root
+   * Finds logrider.config.json file starting from current directory up to root
    */
   private static findConfigFile(): string | null {
     let currentDir = process.cwd();
