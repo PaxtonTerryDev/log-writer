@@ -139,7 +139,7 @@ describe('LogTransport Configuration Integration', () => {
       const config = ConfigLoader.loadConfig(testConfigFile);
       
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to load LogWriter config'),
+        expect.stringContaining('Failed to load LogRider config'),
         expect.any(Error)
       );
       expect(config.transports).toEqual(expect.objectContaining({
@@ -172,7 +172,7 @@ describe('LogTransport Configuration Integration', () => {
       const config = ConfigLoader.loadConfig(testConfigFile);
       
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to load LogWriter config'),
+        expect.stringContaining('Failed to load LogRider config'),
         expect.any(Error)
       );
       expect(config.transports).toEqual(expect.objectContaining({
@@ -205,7 +205,7 @@ describe('LogTransport Configuration Integration', () => {
       const config = ConfigLoader.loadConfig(testConfigFile);
       
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to load LogWriter config'),
+        expect.stringContaining('Failed to load LogRider config'),
         expect.any(Error)
       );
       expect(config.transports).toEqual(expect.objectContaining({
