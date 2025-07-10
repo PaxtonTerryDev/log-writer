@@ -1,5 +1,6 @@
 import { Transport, LogLevel, LevelFilter, ColorConfig, LogOptions } from '../core/interfaces';
 import { ColorUtils } from '../utils/colors';
+import { PermissionUtils, PermissionError } from '../utils/permissions';
 import {
   writeFileSync,
   appendFileSync,
@@ -69,11 +70,8 @@ export class LogTransport implements Transport {
       archivePattern: options.archivePattern || '{name}.{index}',
     };
 
-    // Ensure archive directory exists
-    this.ensureArchiveDirectory();
-    
-    // Ensure the main log file directory exists
-    this.ensureLogDirectory();
+    // Initialize file system with robust permission handling
+    this.initializeFileSystem();
 
     // For date-based rotation, initialize current date
     if (this.options.method === RotationMethod.DATE) {
@@ -446,6 +444,32 @@ export class LogTransport implements Transport {
     }
   }
 
+  private initializeFileSystem(): void {
+    // Validate the main log file path
+    const validation = PermissionUtils.validateFilePath(this.filePath);
+    if (!validation.valid) {
+      console.error(`LogTransport: Invalid file path: ${validation.error?.message}`);
+      throw validation.error;
+    }
+
+    // Ensure main log directory exists with fallback mechanisms
+    const result = PermissionUtils.ensureDirectoryWithFallback(this.filePath);
+    
+    if (!result.success) {
+      console.error(`LogTransport: Failed to create directory: ${result.error?.message}`);
+      throw result.error;
+    }
+
+    // Update file path if fallback was used
+    if (result.usedFallback) {
+      console.warn(`LogTransport: Using fallback directory. Original: ${result.originalPath}, Fallback: ${result.finalPath}`);
+      this.filePath = result.finalPath;
+    }
+
+    // Ensure archive directory exists (with fallback)
+    this.ensureArchiveDirectory();
+  }
+
   private ensureArchiveDirectory(): void {
     const archiveDir = this.options.archiveDir!;
     if (!existsSync(archiveDir)) {
@@ -453,17 +477,15 @@ export class LogTransport implements Transport {
         mkdirSync(archiveDir, { recursive: true });
       } catch (error) {
         console.warn(`Failed to create archive directory ${archiveDir}:`, error);
-      }
-    }
-  }
-
-  private ensureLogDirectory(): void {
-    const dir = dirname(this.filePath);
-    if (!existsSync(dir)) {
-      try {
-        mkdirSync(dir, { recursive: true });
-      } catch (error) {
-        console.warn(`Failed to create log directory ${dir}:`, error);
+        // Try fallback archive directory
+        const fallbackArchiveDir = join(dirname(this.filePath), 'archive');
+        try {
+          mkdirSync(fallbackArchiveDir, { recursive: true });
+          this.options.archiveDir = fallbackArchiveDir;
+          console.warn(`Using fallback archive directory: ${fallbackArchiveDir}`);
+        } catch (fallbackError) {
+          console.warn(`Failed to create fallback archive directory:`, fallbackError);
+        }
       }
     }
   }

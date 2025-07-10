@@ -1,7 +1,7 @@
 import { Transport, LogLevel, LevelFilter, ColorConfig, LogOptions } from '../core/interfaces';
 import { ColorUtils } from '../utils/colors';
-import { writeFileSync, appendFileSync, existsSync, mkdirSync } from 'fs';
-import { dirname } from 'path';
+import { writeFileSync, appendFileSync, existsSync } from 'fs';
+import { PermissionUtils, PermissionError } from '../utils/permissions';
 
 export class FileTransport implements Transport {
   private filePath: string;
@@ -14,7 +14,7 @@ export class FileTransport implements Transport {
     this.name = name;
     this.levelFilter = levelFilter;
     this.colors = colors;
-    this.ensureDirectory();
+    this.initializeFileSystem();
   }
 
   shouldLog(level: LogLevel): boolean {
@@ -60,14 +60,26 @@ export class FileTransport implements Transport {
       .replace('{message}', message);
   }
 
-  private ensureDirectory(): void {
-    const dir = dirname(this.filePath);
-    if (!existsSync(dir)) {
-      try {
-        mkdirSync(dir, { recursive: true });
-      } catch (error) {
-        console.warn(`Failed to create directory ${dir}:`, error);
-      }
+  private initializeFileSystem(): void {
+    // Validate the file path
+    const validation = PermissionUtils.validateFilePath(this.filePath);
+    if (!validation.valid) {
+      console.error(`FileTransport: Invalid file path: ${validation.error?.message}`);
+      throw validation.error;
+    }
+
+    // Ensure directory exists with fallback mechanisms
+    const result = PermissionUtils.ensureDirectoryWithFallback(this.filePath);
+    
+    if (!result.success) {
+      console.error(`FileTransport: Failed to create directory: ${result.error?.message}`);
+      throw result.error;
+    }
+
+    // Update file path if fallback was used
+    if (result.usedFallback) {
+      console.warn(`FileTransport: Using fallback directory. Original: ${result.originalPath}, Fallback: ${result.finalPath}`);
+      this.filePath = result.finalPath;
     }
   }
 
