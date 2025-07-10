@@ -1,11 +1,10 @@
 # LogRider
 
-The name is inspired by Hog Rider, the best Clash of Clans troop. Also, the name `LogWriter` was already taken. Don't worry though, I named everything else normally!
-The name is inspired by Hog Rider, the best Clash of Clans troop. Also, the name `LogWriter` was already taken. Don't worry though, I named everything else normally!
+The name is inspired by Hog Rider, the best Clash of Clans troop. Also, the name `Log` was already taken. Don't worry though, I named everything else normally!
 
 A TypeScript class-aware logging library that provides clear context in log outputs with flexible configuration options.
 
-`LogWriter` is designed for object-oriented codebases where understanding the source of a log message is critical. It's lightweight, performant, and easy to integrate into any project.
+`Log` is designed for object-oriented codebases where understanding the source of a log message is critical. It's lightweight, performant, and easy to integrate into any project.
 
 ## Features
 
@@ -23,7 +22,7 @@ A TypeScript class-aware logging library that provides clear context in log outp
 
 ## Installation
 
-Install `LogWriter` using your favorite package manager:
+Install `Log` using your favorite package manager:
 
 ```bash
 npm install logrider
@@ -38,17 +37,17 @@ yarn add logrider
 
 ## Quick Start
 
-Here's how to get started with `LogWriter` in your TypeScript project.
+Here's how to get started with `Log` in your TypeScript project.
 
 ### Basic Usage
 
-Instantiate `LogWriter` directly in your class, providing the class name as a string.
+Instantiate `Log` directly in your class, providing the class name as a string.
 
 ```typescript
-import { LogWriter } from "LogWriter";
+import { Log } from "Log";
 
 class UserService {
-  private log = new LogWriter("UserService");
+  private log = new Log("UserService");
 
   getUser(id: string) {
     this.log.info(`Fetching user with id: ${id}`);
@@ -79,13 +78,13 @@ The code above will produce the following output in your console:
 If you have multiple instances of a class and need to differentiate their logs, you can provide an optional `instanceId` as the second argument.
 
 ```typescript
-import { LogWriter } from "LogWriter";
+import { Log } from "Log";
 
 class Worker {
-  private log: LogWriter;
+  private log: Log;
 
   constructor(id: string) {
-    this.log = new LogWriter("Worker", id);
+    this.log = new Log("Worker", id);
   }
 
   processTask(task: string) {
@@ -115,9 +114,9 @@ This will result in a clear, instance-specific log output:
 
 ### File-Based Configuration
 
-`LogWriter` supports file-based configuration through a `logwriter.config.json` file. The library automatically searches for this file starting from the current working directory up to the root directory.
+`Log` supports file-based configuration through a `logrider.config.json` file. The library automatically searches for this file starting from the current working directory up to the root directory.
 
-Create a `logwriter.config.json` file in your project root:
+Create a `logrider.config.json` file in your project root:
 
 ```json
 {
@@ -338,7 +337,7 @@ You can also specify custom colors for each log level:
 You can override configuration at runtime using the `setConfig` method:
 
 ```typescript
-const log = new LogWriter("MyClass");
+const log = new Log("MyClass");
 
 // Override configuration for this logger instance
 log.setConfig({
@@ -353,7 +352,7 @@ log.info("This is a minimal log"); // Output: 2025-07-07T12:00:00.000Z This is a
 
 ## API
 
-### `new LogWriter(className: string, instanceId?: string, configPath?: string)`
+### `new Log(className: string, instanceId?: string, configPath?: string)`
 
 Creates a new logger instance.
 
@@ -393,7 +392,7 @@ interface LogOptions {
 **With Timestamp:**
 
 ```typescript
-const log = new LogWriter("MyClass");
+const log = new Log("MyClass");
 log.info("This is a timed log entry.", { timestamp: true });
 // Output: 2025-07-07T12:00:00.000Z [INFO] [MyClass] This is a timed log entry.
 ```
@@ -542,7 +541,7 @@ Here's a comprehensive configuration suitable for production applications:
 ### Multiple Transport Example
 
 ```typescript
-const log = new LogWriter("PaymentService");
+const log = new Log("PaymentService");
 
 // Critical errors go to multiple destinations
 log.error("Payment processing failed", {
@@ -559,7 +558,7 @@ log.debug("Payment validation passed", {
 ### Programmatic Color Configuration
 
 ```typescript
-import { LogWriter, ConsoleTransport, FileTransport } from "LogWriter";
+import { Log, ConsoleTransport, FileTransport } from "Log";
 
 // Create transports with different color settings
 const consoleTransport = new ConsoleTransport("console", undefined, true);
@@ -571,7 +570,7 @@ const coloredFileTransport = new FileTransport(
   true
 );
 
-const log = new LogWriter("MyService");
+const log = new Log("MyService");
 
 // Update configuration to use custom transports
 log.setConfig({
@@ -590,18 +589,12 @@ log.info("This message shows colors in console but not in file");
 
 ## TypeScript Support
 
-`LogWriter` is built with TypeScript and provides full type safety:
+`Log` is built with TypeScript and provides full type safety:
 
 ```typescript
-import {
-  LogWriter,
-  LogLevel,
-  LogOptions,
-  LogTransport,
-  RotationMethod,
-} from "LogWriter";
+import { Log, LogLevel, LogOptions, LogTransport, RotationMethod } from "Log";
 
-const log = new LogWriter("TypedService");
+const log = new Log("TypedService");
 
 // All methods are fully typed
 const options: LogOptions = {
@@ -626,10 +619,10 @@ const rotatingTransport = new LogTransport("./logs/app.log", {
 
 ## Testing
 
-When testing code that uses `LogWriter`, you can easily mock the logger:
+When testing code that uses `Log`, you can easily mock the logger:
 
 ```typescript
-import { LogWriter } from "LogWriter";
+import { Log } from "Log";
 
 // Mock all log methods
 const mockLog = {
@@ -638,12 +631,11 @@ const mockLog = {
   info: jest.fn(),
   debug: jest.fn(),
   trace: jest.fn(),
-  trace: jest.fn(),
-} as unknown as LogWriter;
+} as unknown as Log;
 
 // Use in your tests
 class TestService {
-  constructor(private log: LogWriter = mockLog) {}
+  constructor(private log: Log = mockLog) {}
 }
 ```
 

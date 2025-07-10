@@ -1,8 +1,8 @@
-# TypeScript Class-Aware Logging Library
+# TypeScript Class-Aware Logging Rider Library
 
 ## Project Overview
 
-Create a TypeScript logging library optimized for object-oriented codebases that provides clear class context in log outputs. The library should prioritize simplicity, performance, and developer experience while avoiding over-engineering.
+Create a TypeScript logging rider library optimized for object-oriented codebases that provides clear class context in log outputs. The library should prioritize simplicity, performance, and developer experience while avoiding over-engineering.
 
 **Target Output Format:**
 
@@ -35,7 +35,7 @@ Create a TypeScript logging library optimized for object-oriented codebases that
 ### 1. Primary Logging Interface
 
 ```typescript
-class LogWriter {
+class Log {
   constructor(className: string, instanceId?: string);
 
   // Standard log levels
@@ -72,10 +72,10 @@ class LogWriter {
 
 ### Core Classes
 
-**LogWriter Class** (Primary Interface)
+**Log Class** (Primary Interface)
 
 ```typescript
-export class LogWriter {
+export class Log {
   constructor(private className: string, private instanceId?: string) {}
 
   private formatMessage(level: LogLevel, message: string): string {
@@ -122,7 +122,7 @@ class JSONTransport implements Transport;
 
 ```typescript
 class UserService {
-  log = new LogWriter("UserService");
+  log = new Log("UserService");
 
   getUser(id: string) {
     this.log.info(`Fetching user ${id}`);
@@ -135,7 +135,7 @@ class UserService {
 
 ```typescript
 class Worker {
-  log = new LogWriter("Worker", `thread-${threadId}`);
+  log = new Log("Worker", `thread-${threadId}`);
 
   processTask() {
     this.log.info("Processing task");
@@ -147,7 +147,7 @@ class Worker {
 
 ```typescript
 class UtilityClass {
-  private static log = new LogWriter("UtilityClass");
+  private static log = new Log("UtilityClass");
 
   static processData() {
     this.log.info("Processing data");
@@ -204,7 +204,7 @@ class UtilityClass {
 ```
 src/
 ├── core/
-│   ├── logwriter.ts      # Main LogWriter class
+│   ├── log.ts      # Main Log class
 │   ├── interfaces.ts     # Core interfaces (Loggable, Transport, etc.)
 │   └── config.ts         # Configuration management
 ├── transports/
@@ -220,7 +220,7 @@ src/
 
 ## Success Criteria
 
-1. **Simple API**: `new LogWriter("ClassName")` works immediately
+1. **Simple API**: `new Log("ClassName")` works immediately
 2. **Performance**: No measurable overhead in production builds
 3. **Reliability**: Consistent behavior across all JavaScript environments
 4. **Type Safety**: Full TypeScript support with no `any` types in public API
