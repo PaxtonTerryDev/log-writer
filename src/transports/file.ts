@@ -1,6 +1,7 @@
 import { Transport, LogLevel, LevelFilter, ColorConfig, LogOptions } from '../core/interfaces';
 import { ColorUtils } from '../utils/colors';
-import { writeFileSync, appendFileSync, existsSync } from 'fs';
+import { writeFileSync, appendFileSync, existsSync, mkdirSync } from 'fs';
+import { dirname } from 'path';
 
 export class FileTransport implements Transport {
   private filePath: string;
@@ -13,6 +14,7 @@ export class FileTransport implements Transport {
     this.name = name;
     this.levelFilter = levelFilter;
     this.colors = colors;
+    this.ensureDirectory();
   }
 
   shouldLog(level: LogLevel): boolean {
@@ -56,6 +58,17 @@ export class FileTransport implements Transport {
       .replace('{level}', level)
       .replace('{context}', context)
       .replace('{message}', message);
+  }
+
+  private ensureDirectory(): void {
+    const dir = dirname(this.filePath);
+    if (!existsSync(dir)) {
+      try {
+        mkdirSync(dir, { recursive: true });
+      } catch (error) {
+        console.warn(`Failed to create directory ${dir}:`, error);
+      }
+    }
   }
 
   write(level: LogLevel, message: string, metadata?: Record<string, any>): void {

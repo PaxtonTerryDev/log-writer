@@ -71,6 +71,9 @@ export class LogTransport implements Transport {
 
     // Ensure archive directory exists
     this.ensureArchiveDirectory();
+    
+    // Ensure the main log file directory exists
+    this.ensureLogDirectory();
 
     // For date-based rotation, initialize current date
     if (this.options.method === RotationMethod.DATE) {
@@ -450,6 +453,17 @@ export class LogTransport implements Transport {
         mkdirSync(archiveDir, { recursive: true });
       } catch (error) {
         console.warn(`Failed to create archive directory ${archiveDir}:`, error);
+      }
+    }
+  }
+
+  private ensureLogDirectory(): void {
+    const dir = dirname(this.filePath);
+    if (!existsSync(dir)) {
+      try {
+        mkdirSync(dir, { recursive: true });
+      } catch (error) {
+        console.warn(`Failed to create log directory ${dir}:`, error);
       }
     }
   }
