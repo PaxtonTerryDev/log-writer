@@ -7,6 +7,7 @@ export {
   FileConfig,
   TransportConfig,
   ColorConfig,
+  ChalkColor,
   LevelFilter,
   LogTransportArchiveConfig,
 } from './core/interfaces';

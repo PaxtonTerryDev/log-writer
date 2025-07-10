@@ -1,54 +1,101 @@
+import { Color } from 'chalk';
+
+// Chalk color type definitions for type safety
+export type ChalkColor = 
+  | 'black'
+  | 'red'
+  | 'green'
+  | 'yellow'
+  | 'blue'
+  | 'magenta'
+  | 'cyan'
+  | 'white'
+  | 'blackBright'
+  | 'gray'
+  | 'grey'
+  | 'redBright'
+  | 'greenBright'
+  | 'yellowBright'
+  | 'blueBright'
+  | 'magentaBright'
+  | 'cyanBright'
+  | 'whiteBright'
+  | 'bgBlack'
+  | 'bgRed'
+  | 'bgGreen'
+  | 'bgYellow'
+  | 'bgBlue'
+  | 'bgMagenta'
+  | 'bgCyan'
+  | 'bgWhite'
+  | 'bgBlackBright'
+  | 'bgGray'
+  | 'bgGrey'
+  | 'bgRedBright'
+  | 'bgGreenBright'
+  | 'bgYellowBright'
+  | 'bgBlueBright'
+  | 'bgMagentaBright'
+  | 'bgCyanBright'
+  | 'bgWhiteBright';
+
 export enum LogLevel {
   ERROR = 'ERROR',
   WARN = 'WARN',
   INFO = 'INFO',
   DEBUG = 'DEBUG',
-  TRACE = 'TRACE'
+  TRACE = 'TRACE',
 }
 
 export interface LogOptions {
   timestamp?: boolean;
   metadata?: Record<string, any>;
-  level?: LogLevel;              // Override minimum level check
-  colors?: boolean;              // Override color usage
-  transports?: (Transport | string)[];  // Override transports (instances or names)
-  format?: string;               // Override message format
-  includeLevel?: boolean;        // Override includeLevel from config
-  includeName?: boolean;         // Override includeName from config
+  level?: LogLevel; // Override minimum level check
+  colors?: boolean; // Override color usage
+  transports?: (Transport | string)[]; // Override transports (instances or names)
+  format?: string; // Override message format
+  includeLevel?: boolean; // Override includeLevel from config
+  includeName?: boolean; // Override includeName from config
 }
 
 export interface Transport {
   write(level: LogLevel, message: string, metadata?: Record<string, any>): void;
-  shouldLog?(level: LogLevel): boolean;  // Optional level filtering
-  name?: string;                         // Optional transport name
-  colors?: boolean | ColorConfig;        // Optional color configuration
-  formatMessage?(level: LogLevel, rawMessage: string, context: string, timestamp: string, options?: LogOptions): string;
+  shouldLog?(level: LogLevel): boolean; // Optional level filtering
+  name?: string; // Optional transport name
+  colors?: boolean | ColorConfig; // Optional color configuration
+  formatMessage?(
+    level: LogLevel,
+    rawMessage: string,
+    context: string,
+    timestamp: string,
+    options?: LogOptions
+  ): string;
 }
 
 export interface LoggerConfig {
   level: LogLevel;
   timestamp: boolean;
   colors: boolean | ColorConfig;
-  includeLevel: boolean;                 // Whether to include [LEVEL] in output
-  includeName: boolean;                  // Whether to include [ClassName] in output
+  includeLevel: boolean; // Whether to include [LEVEL] in output
+  includeName: boolean; // Whether to include [ClassName] in output
   transports: Record<string, Transport>; // Named transports
-  defaultTransports: string[];           // Default transport names to use
+  defaultTransports: string[]; // Default transport names to use
 }
 
 export interface ColorConfig {
-  ERROR?: string;
-  WARN?: string;
-  INFO?: string;
-  DEBUG?: string;
-  TRACE?: string;
+  ERROR?: ChalkColor;
+  WARN?: ChalkColor;
+  INFO?: ChalkColor;
+  DEBUG?: ChalkColor;
+  TRACE?: ChalkColor;
 }
 
 export interface FileConfig {
   level?: string;
   timestamp?: boolean;
   colors?: boolean | ColorConfig;
-  includeLevel?: boolean;                // Whether to include [LEVEL] in output
-  includeName?: boolean;                 // Whether to include [ClassName] in output
+  includeLevel?: boolean; // Whether to include [LEVEL] in output
+  includeName?: boolean; // Whether to include [ClassName] in output
   transports?: Record<string, TransportConfig> | TransportConfig[]; // Named or array
   defaultTransports?: string[];
 }
@@ -64,7 +111,7 @@ export interface TransportConfig {
   type: 'console' | 'file' | 'json' | 'log';
   path?: string;
   levels?: LevelFilter;
-  colors?: boolean | ColorConfig;        // Optional color configuration
+  colors?: boolean | ColorConfig; // Optional color configuration
   options?: Record<string, any>;
   // LogTransport specific options
   method?: 'size' | 'date';
@@ -78,4 +125,3 @@ export interface LevelFilter {
   include?: LogLevel[];
   exclude?: LogLevel[];
 }
-
