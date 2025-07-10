@@ -1,0 +1,20 @@
+{
+  "level": "INFO",
+  "timestamp": false,
+  "colors": true,
+  "includeLevel": true,
+  "includeName": true,
+  "transports": {
+    "console": {
+      "type": "console"
+    }
+  },
+  "defaultTransports": ["console"],
+  "production": {
+    "transports": {
+      "console": {
+        "colors": false
+      }
+    }
+  }
+}
