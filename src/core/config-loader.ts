@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
+import { merge } from 'lodash';
 import {
   LogLevel,
   LoggerConfig,
@@ -122,10 +123,7 @@ export class ConfigLoader {
       }
     });
 
-    return {
-      ...rootConfig,
-      ...envConfig,
-    };
+    return merge({}, rootConfig, envConfig);
   }
 
   /**

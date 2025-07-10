@@ -22,3 +22,8 @@ export {
   RotationMethod,
 } from './transports/log';
 
+import { Log } from './core/log';
+
+const log = new Log('TestLog');
+
+log.info('TestLog Info Message');
