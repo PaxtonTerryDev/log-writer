@@ -169,6 +169,158 @@ Create a `logrider.config.json` file in your project root:
 | `transports`        | object   | -             | Named transport configurations      |
 | `defaultTransports` | string[] | `["console"]` | Default transports to use           |
 
+### Environment-Based Configuration
+
+LogRider supports environment-specific configurations using the `LOGRIDER_ENV` environment variable. This allows you to have different logging configurations for development, staging, and production environments.
+
+#### Basic Environment Configuration
+
+Create a `logrider.config.json` file with environment-specific sections:
+
+```json
+{
+  "level": "INFO",
+  "timestamp": false,
+  "colors": true,
+  "transports": {
+    "console": {
+      "type": "console"
+    }
+  },
+  "defaultTransports": ["console"],
+  "development": {
+    "level": "DEBUG",
+    "timestamp": true,
+    "colors": true,
+    "transports": {
+      "console": {
+        "type": "console"
+      },
+      "debug": {
+        "type": "file",
+        "path": "./logs/debug.log"
+      }
+    },
+    "defaultTransports": ["console", "debug"]
+  },
+  "production": {
+    "level": "WARN",
+    "timestamp": true,
+    "colors": false,
+    "transports": {
+      "console": {
+        "type": "console",
+        "colors": false
+      },
+      "app-logs": {
+        "type": "log",
+        "path": "./logs/app.log",
+        "method": "size",
+        "maxSize": "50MB",
+        "maxFiles": 10,
+        "archive": {
+          "enabled": true,
+          "directory": "./logs/archive",
+          "compress": true,
+          "retentionDays": 90
+        }
+      },
+      "error-logs": {
+        "type": "log",
+        "path": "./logs/errors.log",
+        "method": "date",
+        "dateFormat": "YYYY-MM-DD",
+        "maxFiles": 365,
+        "levels": {
+          "include": ["ERROR", "WARN"]
+        },
+        "archive": {
+          "enabled": true,
+          "directory": "./logs/archive/errors",
+          "compress": true,
+          "retentionDays": 365
+        }
+      }
+    },
+    "defaultTransports": ["console", "app-logs", "error-logs"]
+  }
+}
+```
+
+#### Environment Usage
+
+Set the `LOGRIDER_ENV` environment variable to specify which environment configuration to use:
+
+```bash
+# Use development configuration
+export LOGRIDER_ENV=development
+node app.js
+
+# Use production configuration  
+export LOGRIDER_ENV=production
+node app.js
+
+# Use root configuration (default behavior)
+unset LOGRIDER_ENV
+node app.js
+```
+
+#### How Environment Configuration Works
+
+1. **Environment Detection**: LogRider checks the `LOGRIDER_ENV` environment variable
+2. **Configuration Merging**: If an environment is specified and exists in the config:
+   - The environment-specific configuration is merged with the root configuration
+   - Environment-specific settings take precedence over root settings
+   - Other environment sections are ignored
+3. **Fallback Behavior**: If no environment is specified or the environment doesn't exist:
+   - Uses the root configuration (backward compatible)
+   - Warns if specified environment is not found
+
+#### Environment Configuration Examples
+
+**Development Environment:**
+- Debug-level logging enabled
+- Timestamps included for better debugging
+- Additional debug file transport
+- Colored console output
+
+**Production Environment:**
+- Warning-level logging only
+- Structured logging with rotation
+- Separate error log files
+- No colored output for cleaner logs
+- Automatic archiving and compression
+
+**Staging Environment:**
+```json
+{
+  "staging": {
+    "level": "INFO",
+    "timestamp": true,
+    "colors": false,
+    "transports": {
+      "console": {
+        "type": "console"
+      },
+      "staging-logs": {
+        "type": "log",
+        "path": "./logs/staging.log",
+        "method": "size",
+        "maxSize": "25MB",
+        "maxFiles": 5
+      }
+    },
+    "defaultTransports": ["console", "staging-logs"]
+  }
+}
+```
+
+This environment-based configuration system allows you to:
+- Maintain a single configuration file for all environments
+- Keep development settings verbose and production settings minimal
+- Easily switch between environments without code changes
+- Maintain backward compatibility with existing configurations
+
 ### Transport Types
 
 #### Console Transport
